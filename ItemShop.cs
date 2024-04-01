@@ -1,11 +1,11 @@
-﻿using HutongGames.PlayMaker;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections.Generic;
+using HutongGames.PlayMaker;
 using MSCLoader;
 using System.Collections;
 using System.Linq;
 using HutongGames.PlayMaker.Actions;
-using System.Collections.Generic;
-using System.Diagnostics;
+
 
 namespace UniversalShoppingSystem
 {
@@ -15,10 +15,10 @@ namespace UniversalShoppingSystem
         [Header("Shop Settings")]
         public string ItemName = "Shop Name";
         public float ItemPrice;
+        [Header("Relative to store_inside")]
         public Vector3 TriggerPosition;
         public Vector3 TriggerRotation;
 
-        [Header("Item Settings")]
         public GameObject ItemPrefab;
         public bool SpawnInBag;
 
@@ -31,6 +31,7 @@ namespace UniversalShoppingSystem
         // Only important on runtime, handled automatically. No need to change anything here!
         [HideInInspector]
         public int Stock;
+        [HideInInspector]
         public int Cart;
         private int itemsBought;
 
@@ -184,6 +185,5 @@ namespace UniversalShoppingSystem
                 Cart = 0;
             }
         }
-
     }
 }

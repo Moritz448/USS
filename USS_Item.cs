@@ -6,7 +6,9 @@ namespace UniversalShoppingSystem
     {
         [HideInInspector]
         public bool InBag;
+        [HideInInspector]
         public string BagID;
+        [HideInInspector]
         public ItemShop OriginShop;
     }
 }
