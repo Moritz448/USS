@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("UniversalShoppingSystem")]
 [assembly: AssemblyDescription("My Summer Car Mod file")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Honeycomb936")]
 [assembly: AssemblyProduct("UniversalShoppingSystem")]
 [assembly: AssemblyCopyright("Copyright © 2024 by Honeycomb936")]
 [assembly: AssemblyTrademark("")]
