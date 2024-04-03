@@ -76,8 +76,8 @@ namespace UniversalShoppingSystem
             vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this });
 
             this.transform.SetParent(GameObject.Find("STORE").transform.Find("LOD").transform.Find("GFX_Store").transform.Find("store_inside"), false);
-            this.transform.localEulerAngles = TriggerPosition;
-            this.transform.localPosition = TriggerRotation;
+            this.transform.localEulerAngles = TriggerRotation;
+            this.transform.localPosition = TriggerPosition;
             this.transform.SetParent(null, true); // Needs to be parented to root in order to stay active all the time to not cause problems with restocking; Might change.
 
             Stock = this.transform.childCount;
@@ -91,7 +91,7 @@ namespace UniversalShoppingSystem
                 GameObject store = GameObject.Find("STORE");
                 PlayMakerFSM fsm = store.transform.Find("LOD/ShopFunctions/BagCreator").GetPlayMaker("Create");
                 fsm.InitializeFSM();
-                fsm.GetState("Copy contents").InsertAction(0, new BagSetupAction
+                fsm.GetState("Copy contents").InsertAction(0, new USSBagSetupAction
                 {
                     bag = (fsm.GetState("Copy contents").Actions.First(action => action is ArrayListCopyTo) as ArrayListCopyTo).gameObjectTarget.GameObject,
                     shop = this
