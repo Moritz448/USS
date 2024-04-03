@@ -21,12 +21,14 @@ namespace UniversalShoppingSystem
 
         IEnumerator InitiateBag()
         {
+            yield return new WaitForSeconds(0.5f);
             if (this.gameObject.GetComponent<ModShopBagInv>())
             {
-                ModConsole.LogWarning("This bag already has an expanded shop behaviour on it; mergin lists");
+                ModConsole.Log("This bag already has an expanded shop behaviour on it; mergin lists");
                 ModShopBagInv es = gameObject.GetComponent<ModShopBagInv>();
                 ModItem itm;
-                for (int i = 0; i < es.shoplist.Count; i++)
+                int length = es.shoplist.Count;
+                for (int i = 0; i <= length; i++)
                 {
                     this.BagContent.Add(es.shoplist[i]);
                     itm = es.shoplist[i].GetComponent<ModItem>();
@@ -34,15 +36,41 @@ namespace UniversalShoppingSystem
                     itm.BagCountInt = this.BagContent.IndexOf(itm.gameObject);
                     es.shoplist.Remove(es.shoplist[i]);
                 }
+                //gameObject.GetComponent<PlayMakerFSM>().GetState("Spawn one").RemoveAction(0);
+                //gameObject.GetComponent<PlayMakerFSM>().GetState("Spawn all").RemoveAction(0); // Removing the expanded shop bag opening actions from the bag
+                FsmState spawnone = gameObject.GetComponent<PlayMakerFSM>().GetState("Spawn one");
+                FsmState spawnall = gameObject.GetComponent<PlayMakerFSM>().GetState("Spawn all");
+                int actionindex = 0;
+                foreach (FsmStateAction action in spawnone.Actions)
+                {
+                    if (action is BagOpenAction)
+                    {
+                        ModConsole.LogWarning("Found spawnone action; Removing");
+                        spawnone.RemoveAction(actionindex);
+                        break;
+                    }
+                    else actionindex++;
+                }
+                actionindex = 0;
+                foreach (FsmStateAction action in spawnall.Actions)
+                {
+                    if (action is BagOpenAction)
+                    {
+                        ModConsole.LogWarning("Found spawnall action; Removing");
+                        spawnone.RemoveAction(actionindex);
+                        break;
+                    }
+                    else actionindex++;
+                }
 
-                Destroy(es);//
-                ModConsole.LogWarning("Deleted expanded shop behaviour from bag and moved items over");
-                //if (BagContent.Count == 0) Destroy(this); // If there are no items in here, just destroy the behaviour.
+                //Destroy(es);
+
+                ModConsole.Log("Deleted expanded shop behaviour from bag and moved items over");
+                if (BagContent.Count == 0) Destroy(this); // If there are no items in here, just destroy the behaviour.
             }
 
-            yield return new WaitForSeconds(0.5f);
             // Destroy bag when its empty
-            if (BagContent.Count == 0) Destroy(this);
+            //if (BagContent.Count == 0) Destroy(this);
             else
             {
                 foreach (GameObject obj in BagContent)
@@ -119,15 +147,26 @@ namespace UniversalShoppingSystem
                     itm.position = new Vector3(Fsm.GameObject.transform.position.x, Fsm.GameObject.transform.position.y + 0.1f, Fsm.GameObject.transform.position.z);
                     itm.eulerAngles = Vector3.zero;
                     itm.gameObject.SetActive(true);
-                    USSItem ussitm = itm.GetComponent<USSItem>();
-                    ussitm.InBag = false;
-                    ussitm.OriginShop.BoughtItems.Add(itm.gameObject);
+                    if (itm.GetComponent<USSItem>()) // If its an USS item...
+                    {
+                        USSItem ussitm = itm.GetComponent<USSItem>();
+                        ussitm.InBag = false;
+                        ussitm.OriginShop.BoughtItems.Add(itm.gameObject);
+                    }
+                    else // else it has to be an expanded shop item.
+                    {
+                        ModItem esitm = itm.GetComponent<ModItem>();
+                        esitm.InBag = false;
+                    }
                     inv.BagContent.Remove(itm.gameObject);
                     if (CheckEmpty()) MasterAudio.PlaySound3DAndForget("HouseFoley", inv.transform, false, 1f, 1f, 0f, "plasticbag_open2");
                     FsmVariables.GlobalVariables.FindFsmString("GUIinteraction").Value = "";
                     if (inv.BagContent.Count == 0 && CheckEmpty()) Fsm.Event("GARBAGE");
+                    if (inv.BagContent.Count == 0) Object.Destroy(inv);
+                    ModConsole.LogWarning("Sending Finished.");
                     Fsm.Event("FINISHED");
                 }
+                
             }
             else
             {
