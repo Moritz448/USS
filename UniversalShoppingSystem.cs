@@ -1,6 +1,4 @@
 ﻿using MSCLoader;
-using System;
-using System.IO;
 
 namespace UniversalShoppingSystem
 {
@@ -24,5 +22,7 @@ namespace UniversalShoppingSystem
                     ModUI.CreateMessageBoxBtn("I will", () => { }, false)
                 });
         }
+        
     }
+    
 }
