@@ -65,6 +65,7 @@ namespace UniversalShoppingSystem
         private void Awake()
         {
             if (!GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>()) GameObject.Find("PLAYER").AddComponent<ItemShopRaycast>();
+            GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>().Shops.Add(this); // Add shop for commands etc
 
             register = GameObject.Find("STORE/StoreCashRegister/Register").GetComponent<PlayMakerFSM>();
             vanillaShopInventory = GameObject.Find("STORE/Inventory");
@@ -118,12 +119,12 @@ namespace UniversalShoppingSystem
             yield return null;
         }
 
-        public void SpawnBag(ModShopBagInv inv)
+        public void SpawnBag(USSBagInventory inv)
         {
             if (this.SpawnInBag) StartCoroutine(BagSpawner(inv));
         }
 
-        IEnumerator BagSpawner(ModShopBagInv invent)
+        IEnumerator BagSpawner(USSBagInventory invent)
         {
             yield return new WaitForSeconds(0.3f);
             itemsBought += Cart;
@@ -132,7 +133,7 @@ namespace UniversalShoppingSystem
                 Cart--;
                 GameObject item = GameObject.Instantiate(ItemPrefab);
                 item.SetActive(false);
-                invent.shoplist.Add(item);
+                invent.BagContent.Add(item);
                 BoughtItems.Add(item); // For Saving/Loading
                 USSItem ussitm = item.GetComponent<USSItem>();
                 ussitm.InBag = true;

@@ -1,11 +1,13 @@
 ﻿using HutongGames.PlayMaker;
 using MSCLoader;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UniversalShoppingSystem
 {
     public class ItemShopRaycast : MonoBehaviour
     {
+        public List<ItemShop> Shops = new List<ItemShop>();
 
         private Camera fpsCam;
         private RaycastHit hit;

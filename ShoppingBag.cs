@@ -3,30 +3,55 @@ using System.Collections.Generic;
 using UnityEngine;
 using HutongGames.PlayMaker;
 using MSCLoader;
+using Microsoft.Win32;
+using Microsoft.CSharp;
+using ExpandedShop;
 
 namespace UniversalShoppingSystem
 {
-    public class ModShopBagInv : MonoBehaviour
+    public class USSBagInventory : MonoBehaviour
     {
-        public List<GameObject> shoplist = new List<GameObject>();
+        public List<GameObject> BagContent = new List<GameObject>();
 
         void Start()
         {
             StartCoroutine(CheckItems());
+            StartCoroutine(HomuraCheck());
         }
         IEnumerator CheckItems()
         {
             yield return new WaitForSeconds(0.5f);
             // Destroy bag when its empty
-            if (shoplist.Count == 0) Destroy(this);
+            if (BagContent.Count == 0) Destroy(this);
             else
             {
-                foreach (GameObject obj in shoplist)
+                foreach (GameObject obj in BagContent)
                 {
                     obj.GetComponent<USSItem>().BagID = gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value;
                 }
             }
             yield break;
+        }
+
+        IEnumerator HomuraCheck()
+        {   
+            if (this.gameObject.GetComponent<ModShopBagInv>())
+            {
+                ModConsole.LogWarning("This bag already has an expanded shop behaviour on it; mergin lists");
+                ModShopBagInv es = gameObject.GetComponent<ModShopBagInv>();
+                ModItem itm;
+                for (int i = 0; i < es.shoplist.Count; i++)
+                {
+                    itm = es.shoplist[i].GetComponent<ModItem>();
+                    itm.BagID = this.gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value;
+                    itm.BagCountInt = this.BagContent.IndexOf(itm.gameObject);
+                    es.shoplist.Remove(es.shoplist[i]);
+                }
+
+                Destroy(es);
+                ModConsole.LogWarning("Deleted expanded shop behaviour from bag and moved items over");
+            }
+            yield return null;
         }
     }
     public class BagSetupAction : FsmStateAction
@@ -35,7 +60,7 @@ namespace UniversalShoppingSystem
         public ItemShop shop;
         public override void OnEnter()
         {
-            ModShopBagInv inv = bag.Value.AddComponent<ModShopBagInv>();
+            USSBagInventory inv = bag.Value.AddComponent<USSBagInventory>();
             if (shop.SpawnInBag) shop.SpawnBag(inv);
             BagSetupOpenAction act = bag.Value.AddComponent<BagSetupOpenAction>();
             act.bag = bag.Value;
@@ -45,41 +70,41 @@ namespace UniversalShoppingSystem
     }
     public class BagOpenAction : FsmStateAction
     {
-        public ModShopBagInv inv;
+        public USSBagInventory inv;
         public bool OpenAll = false;
         public PlayMakerArrayListProxy[] Arrays;
         public override void OnEnter()
         {
             if (!OpenAll)
             {
-                if (inv.shoplist.Count > 0)
+                if (inv.BagContent.Count > 0)
                 {
-                    Transform itm = inv.shoplist[0].transform;
+                    Transform itm = inv.BagContent[0].transform;
                     itm.position = new Vector3(Fsm.GameObject.transform.position.x, Fsm.GameObject.transform.position.y + 0.1f, Fsm.GameObject.transform.position.z);
                     itm.eulerAngles = Vector3.zero;
                     itm.gameObject.SetActive(true);
                     USSItem ussitm = itm.GetComponent<USSItem>();
                     ussitm.InBag = false;
                     ussitm.OriginShop.BoughtItems.Add(itm.gameObject);
-                    inv.shoplist.Remove(itm.gameObject);
+                    inv.BagContent.Remove(itm.gameObject);
                     if (CheckEmpty()) MasterAudio.PlaySound3DAndForget("HouseFoley", inv.transform, false, 1f, 1f, 0f, "plasticbag_open2");
                     FsmVariables.GlobalVariables.FindFsmString("GUIinteraction").Value = "";
-                    if (inv.shoplist.Count == 0 && CheckEmpty()) Fsm.Event("GARBAGE");
+                    if (inv.BagContent.Count == 0 && CheckEmpty()) Fsm.Event("GARBAGE");
                     Fsm.Event("FINISHED");
                 }
             }
             else
             {
-                for (int i = 0; i < inv.shoplist.Count; i++)
+                for (int i = 0; i < inv.BagContent.Count; i++)
                 {
-                    inv.shoplist[i].transform.position = inv.gameObject.transform.position;
-                    inv.shoplist[i].transform.eulerAngles = Vector3.zero;
-                    inv.shoplist[i].SetActive(true);
-                    USSItem ussitm = inv.shoplist[i].GetComponent<USSItem>();
+                    inv.BagContent[i].transform.position = inv.gameObject.transform.position;
+                    inv.BagContent[i].transform.eulerAngles = Vector3.zero;
+                    inv.BagContent[i].SetActive(true);
+                    USSItem ussitm = inv.BagContent[i].GetComponent<USSItem>();
                     ussitm.InBag = false;
-                    ussitm.OriginShop.BoughtItems.Add(inv.shoplist[i].gameObject);
+                    ussitm.OriginShop.BoughtItems.Add(inv.BagContent[i].gameObject);
                 }
-                inv.shoplist = new List<GameObject>();
+                inv.BagContent = new List<GameObject>();
                 FsmVariables.GlobalVariables.FindFsmString("GUIinteraction").Value = "";
                 if (CheckEmpty())
                 {
@@ -109,7 +134,7 @@ namespace UniversalShoppingSystem
     public class BagSetupOpenAction : MonoBehaviour
     {
         PlayMakerFSM use;
-        public ModShopBagInv inv;
+        public USSBagInventory inv;
         public GameObject bag;
         void Start()
         {
