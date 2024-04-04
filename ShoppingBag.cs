@@ -4,6 +4,7 @@ using UnityEngine;
 using HutongGames.PlayMaker;
 using MSCLoader;
 using ExpandedShop;
+using System.Linq;
 
 namespace UniversalShoppingSystem
 {
@@ -26,51 +27,31 @@ namespace UniversalShoppingSystem
             {
                 ModConsole.Log("This bag already has an expanded shop behaviour on it; mergin lists");
                 ModShopBagInv es = gameObject.GetComponent<ModShopBagInv>();
-                ModItem itm;
-                int length = es.shoplist.Count;
-                for (int i = 0; i <= length; i++)
+                USSItem ussitm;
+                ModItem moditm;
+                this.BagContent.AddRange(es.shoplist);
+                for (int i = 0; i < this.BagContent.Count; i++)
                 {
-                    this.BagContent.Add(es.shoplist[i]);
-                    itm = es.shoplist[i].GetComponent<ModItem>();
-                    itm.BagID = this.gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value;
-                    itm.BagCountInt = this.BagContent.IndexOf(itm.gameObject);
-                    es.shoplist.Remove(es.shoplist[i]);
-                }
-                //gameObject.GetComponent<PlayMakerFSM>().GetState("Spawn one").RemoveAction(0);
-                //gameObject.GetComponent<PlayMakerFSM>().GetState("Spawn all").RemoveAction(0); // Removing the expanded shop bag opening actions from the bag
-                FsmState spawnone = gameObject.GetComponent<PlayMakerFSM>().GetState("Spawn one");
-                FsmState spawnall = gameObject.GetComponent<PlayMakerFSM>().GetState("Spawn all");
-                int actionindex = 0;
-                foreach (FsmStateAction action in spawnone.Actions)
-                {
-                    if (action is BagOpenAction)
+                    if (BagContent[i].GetComponent<USSItem>())
                     {
-                        ModConsole.LogWarning("Found spawnone action; Removing");
-                        spawnone.RemoveAction(actionindex);
-                        break;
+                        ussitm = BagContent[i].GetComponent<USSItem>();
+                        ussitm.BagID = this.gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value;
                     }
-                    else actionindex++;
-                }
-                actionindex = 0;
-                foreach (FsmStateAction action in spawnall.Actions)
-                {
-                    if (action is BagOpenAction)
+                    else if (BagContent[i].GetComponent<ModItem>()) // Expanded shop 
                     {
-                        ModConsole.LogWarning("Found spawnall action; Removing");
-                        spawnone.RemoveAction(actionindex);
-                        break;
+                        moditm = BagContent[i].GetComponent<ModItem>();
+                        moditm.BagID = gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value;
+                        moditm.BagCountInt = BagContent.IndexOf(moditm.gameObject);
                     }
-                    else actionindex++;
+                    else ModConsole.LogError("Found no item behaviour");
+
+                    es.shoplist.Clear();
                 }
 
-                //Destroy(es);
-
-                ModConsole.Log("Deleted expanded shop behaviour from bag and moved items over");
+                ModConsole.Log("Moved items over");
                 if (BagContent.Count == 0) Destroy(this); // If there are no items in here, just destroy the behaviour.
             }
 
-            // Destroy bag when its empty
-            //if (BagContent.Count == 0) Destroy(this);
             else
             {
                 foreach (GameObject obj in BagContent)
