@@ -34,7 +34,7 @@ namespace UniversalShoppingSystem
 
         void Start() => StartCoroutine(Setup());
         
-        IEnumerator Setup()
+        private IEnumerator Setup()
         {
             yield return new WaitForSeconds(0.4f);
 

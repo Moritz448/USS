@@ -31,7 +31,7 @@ namespace UniversalShoppingSystem
             if (ModLoader.IsModPresent("ExpandedShop"))
             {
                 StartCoroutine(PatchES());
-                
+
                 if (System.Convert.ToDecimal(ModLoader.GetMod("ExpandedShop").Version) < 1.1m)
                 {
                     ModUI.ShowCustomMessage("You are using an old version of ExpandedShop which is not compatible with UniversalShoppingSystem. Please update or uninstall ExpandedShop.", "Wrong Version", new MsgBoxBtn[]
@@ -49,14 +49,14 @@ namespace UniversalShoppingSystem
 
         private void Update()
         {
-            bool lmb = Input.GetKeyDown(KeyCode.Mouse0);
-            bool rmb = Input.GetKeyDown(KeyCode.Mouse1);
-
-            Physics.Raycast(fpsCam.ScreenPointToRay(Input.mousePosition), out hit, 1.35f);
-
-            if (hit.collider.gameObject.GetComponent<ItemShop>())
+            if (storeOpen.Value)
             {
-                if (storeOpen.Value == true)
+                bool lmb = Input.GetKeyDown(KeyCode.Mouse0);
+                bool rmb = Input.GetKeyDown(KeyCode.Mouse1);
+
+                Physics.Raycast(fpsCam.ScreenPointToRay(Input.mousePosition), out hit, 1.35f);
+
+                if (hit.collider != null) if (hit.collider.gameObject.GetComponent<ItemShop>())
                 {
                     ItemShop shop = hit.collider.gameObject.GetComponent<ItemShop>();
                     cartIconShowing = true;
@@ -66,13 +66,13 @@ namespace UniversalShoppingSystem
                     if (lmb && shop.Stock > 0) shop.Buy();
                     else if (rmb && shop.Cart > 0) shop.Unbuy();
                 }
-            }
 
-            else if (cartIconShowing)
-            {
-                cartIconShowing = false;
-                _guiBuy.Value = false;
-                _guiText.Value = "";
+                else if (cartIconShowing)
+                {
+                    cartIconShowing = false;
+                    _guiBuy.Value = false;
+                    _guiText.Value = "";
+                }
             }
         }
     }
