@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using ExpandedShop;
+using Harmony;
 
 namespace UniversalShoppingSystem
 {
@@ -45,6 +46,14 @@ namespace UniversalShoppingSystem
             _guiBuy = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy");
             _guiText = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
             storeOpen = GameObject.Find("STORE").GetPlayMaker("OpeningHours").FsmVariables.FindFsmBool("OpenStore");
+
+            // Check for duplicate Shop IDs, which would cause the save/load system to malfunction
+            List<string> shopIDs = new List<string>();
+            foreach (ItemShop shop in Shops)
+            {
+                if (shopIDs.Contains(shop.ShopID)) ModConsole.LogError("UniversalShoppingSystem: ShopID " + shop.ShopID + " is not unique!");
+                else shopIDs.Add(shop.ShopID);
+            }
         }
 
         private void Update()
