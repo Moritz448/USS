@@ -105,6 +105,7 @@ namespace UniversalShoppingSystem
                         USSItem ussitm = itm.GetComponent<USSItem>();
                         ussitm.InBag = false;
                         ussitm.OriginShop.BoughtItems.Add(itm.gameObject);
+                        ussitm.Condition = base.Fsm.Variables.FindFsmFloat("Condition").Value;
                     }
                     else if (ModLoader.IsModPresent("ExpandedShop") && CheckForModItem(itm)) TakeModItemOut(itm); // else it has to be an expanded shop item.
 

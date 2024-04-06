@@ -10,5 +10,7 @@ namespace UniversalShoppingSystem
         public string BagID;
         [HideInInspector]
         public ItemShop OriginShop;
+        [HideInInspector]
+        public float Condition;
     }
 }
