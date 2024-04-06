@@ -1,5 +1,8 @@
-﻿using HutongGames.PlayMaker;
+﻿using ExpandedShop;
+using Harmony;
+using HutongGames.PlayMaker;
 using MSCLoader;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,8 +21,28 @@ namespace UniversalShoppingSystem
 
         private bool cartIconShowing;
 
+        private static readonly HarmonyInstance harmony = HarmonyInstance.Create("UniversalShoppingSystem");
+
+        private IEnumerator PatchES()
+        {
+            GameObject.Find("STORE/TeimoDrinksMod(Clone)").GetComponent<ShopRaycast>().ApplyFsmBool = false;
+            yield break;
+        }
         private void Awake()
         {
+            if (ModLoader.IsModPresent("ExpandedShop"))
+            {
+                StartCoroutine(PatchES());
+                
+                if (System.Convert.ToDecimal(ModLoader.GetMod("ExpandedShop").Version) < 1.1m)
+                {
+                    ModUI.ShowCustomMessage("You are using an old version of ExpandedShop which is not compatible with UniversalShoppingSystem. Please update or uninstall ExpandedShop.", "Wrong Version", new MsgBoxBtn[]
+                {
+                    ModUI.CreateMessageBoxBtn("I will", () => { }, false)
+                });
+                }
+            }
+
             fpsCam = GameObject.Find("PLAYER").transform.Find("Pivot/AnimPivot/Camera/FPSCamera/FPSCamera").GetComponent<Camera>();
             _guiBuy = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy");
             _guiText = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");

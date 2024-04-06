@@ -126,7 +126,7 @@ namespace UniversalShoppingSystem
 
         IEnumerator BagSpawner(USSBagInventory invent)
         {
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.31f);
             itemsBought += Cart;
             while (Cart > 0)
             {
