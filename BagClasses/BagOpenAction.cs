@@ -51,6 +51,8 @@ namespace UniversalShoppingSystem
                 if (CheckVanillaEmpty()) Fsm.Event("GARBAGE");
                 Object.Destroy(inv);
             }
+
+            foreach (System.Action func in itm.GetComponent<USSItem>().OriginShop.onBagTakeout) func(); // Run user-provided actions
             Fsm.Event("FINISHED");
 
         }
@@ -58,11 +60,7 @@ namespace UniversalShoppingSystem
         {
             if (!OpenAll)
             {
-                if (inv.BagContent.Count > 0)
-                {
-                    TakeOutOne();
-                }
-
+                if (inv.BagContent.Count > 0) TakeOutOne();
             }
             else
             {

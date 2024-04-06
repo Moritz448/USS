@@ -5,7 +5,7 @@ using MSCLoader;
 using System.Collections;
 using System.Linq;
 using HutongGames.PlayMaker.Actions;
-
+using System;
 
 namespace UniversalShoppingSystem
 {
@@ -26,6 +26,13 @@ namespace UniversalShoppingSystem
         public List<GameObject> BoughtItems = new List<GameObject>(); // Used for saving, no need to fill up in inspector!
 
         [HideInInspector]
+        public List<Action> onBuy = new List<Action>();
+        [HideInInspector]
+        public List<Action> onBagTakeout = new List<Action>();
+        [HideInInspector]
+        public List<Action> onRestock = new List<Action>();
+
+        [HideInInspector]
         private Vector3 bigItemSpawnPosition = new Vector3(-1551.303f, 4.88f, 1181.904f);
 
         // Only important on runtime, handled automatically. No need to change anything here!
@@ -33,6 +40,7 @@ namespace UniversalShoppingSystem
         public int Stock;
         [HideInInspector]
         public int Cart;
+
         private int itemsBought;
 
         private PlayMakerFSM register; // Required to hook paying mechanics
@@ -115,8 +123,8 @@ namespace UniversalShoppingSystem
         private IEnumerator RestockShop()
         {
             for (int i = 0; i < this.gameObject.transform.childCount; i++) this.transform.GetChild(i).gameObject.SetActive(true);
-
-            yield return null;
+            foreach (Action func in onRestock) func(); // Run user-provided actions
+            yield break;
         }
 
         public void SpawnBag(USSBagInventory inv)
@@ -169,7 +177,7 @@ namespace UniversalShoppingSystem
         {
             if (this.Cart > 0)
             {
-                // Ability to register actions on buying the stuff
+                StartCoroutine(RunOnBuy()); // Run user-provided actions
             }
 
             if (!this.SpawnInBag) // When its a big item...
@@ -185,6 +193,13 @@ namespace UniversalShoppingSystem
                 itemsBought += Cart;
                 Cart = 0;
             }
+        }
+
+        private IEnumerator RunOnBuy()
+        {
+            foreach (Action func in onBuy) func();
+            
+            yield break;
         }
     }
 }
