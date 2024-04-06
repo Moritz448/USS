@@ -52,7 +52,7 @@ namespace UniversalShoppingSystem
                 Object.Destroy(inv);
             }
 
-            foreach (System.Action func in itm.GetComponent<USSItem>().OriginShop.onBagTakeout) func(); // Run user-provided actions
+            itm.GetComponent<USSItem>().OriginShop.TookOutOfBag(); // Run user-provided actions
             Fsm.Event("FINISHED");
 
         }

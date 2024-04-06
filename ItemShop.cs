@@ -1,16 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
 using MSCLoader;
+using System;
 using System.Collections;
 using System.Linq;
-using HutongGames.PlayMaker.Actions;
-using System;
 
 namespace UniversalShoppingSystem
 {
     public class ItemShop : MonoBehaviour
     {
+        public delegate void ShopEvent();
+
         // Settings to change in Unity
         [Header("Shop Settings")]
         public string ItemName = "Shop Name";
@@ -22,23 +24,16 @@ namespace UniversalShoppingSystem
         public GameObject ItemPrefab;
         public bool SpawnInBag;
 
-        [HideInInspector]
+        // After here nothing is important for the setup in unity, so the following fields are not included in the mini dll
         public List<GameObject> BoughtItems = new List<GameObject>(); // Used for saving, no need to fill up in inspector!
 
-        [HideInInspector]
-        public List<Action> onBuy = new List<Action>();
-        [HideInInspector]
-        public List<Action> onBagTakeout = new List<Action>();
-        [HideInInspector]
-        public List<Action> onRestock = new List<Action>();
+        public event ShopEvent OnBuy;
+        public event ShopEvent OnBagTakeout;
+        public event ShopEvent OnRestock;
 
-        [HideInInspector]
         private Vector3 bigItemSpawnPosition = new Vector3(-1551.303f, 4.88f, 1181.904f);
 
-        // Only important on runtime, handled automatically. No need to change anything here!
-        [HideInInspector]
         public int Stock;
-        [HideInInspector]
         public int Cart;
 
         private int itemsBought;
@@ -47,6 +42,10 @@ namespace UniversalShoppingSystem
         private PlayMakerFSM registerData;
         private GameObject vanillaShopInventory; // Required to hook restock mechanics
 
+        public void SaveShop(Mod mod)
+        {
+
+        }
 
         public class CreateBagAction : FsmStateAction
         {
@@ -112,18 +111,20 @@ namespace UniversalShoppingSystem
                 });
             }
         }
-
+        
+        public void TookOutOfBag() => OnBagTakeout?.Invoke();
+        
         private void Restock()
         {
             StartCoroutine(RestockShop());
             itemsBought = 0;
             Stock = this.gameObject.transform.childCount;
+            OnRestock?.Invoke(); // Run user-provided actions
         }
 
         private IEnumerator RestockShop()
         {
-            for (int i = 0; i < this.gameObject.transform.childCount; i++) this.transform.GetChild(i).gameObject.SetActive(true);
-            foreach (Action func in onRestock) func(); // Run user-provided actions
+            for (int i = 0; i < this.gameObject.transform.childCount; i++) this.transform.GetChild(i).gameObject.SetActive(true); 
             yield break;
         }
 
@@ -132,7 +133,7 @@ namespace UniversalShoppingSystem
             if (this.SpawnInBag) StartCoroutine(BagSpawner(inv));
         }
 
-        IEnumerator BagSpawner(USSBagInventory invent)
+        private IEnumerator BagSpawner(USSBagInventory invent)
         {
             yield return new WaitForSeconds(0.31f);
             itemsBought += Cart;
@@ -175,11 +176,8 @@ namespace UniversalShoppingSystem
 
         private void Pay()
         {
-            if (this.Cart > 0)
-            {
-                StartCoroutine(RunOnBuy()); // Run user-provided actions
-            }
-
+            if (this.Cart > 0) OnBuy?.Invoke();
+            
             if (!this.SpawnInBag) // When its a big item...
             {
                 for (int i = 0; i < Cart; i++)
@@ -193,13 +191,6 @@ namespace UniversalShoppingSystem
                 itemsBought += Cart;
                 Cart = 0;
             }
-        }
-
-        private IEnumerator RunOnBuy()
-        {
-            foreach (Action func in onBuy) func();
-            
-            yield break;
         }
     }
 }

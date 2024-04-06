@@ -36,7 +36,7 @@ namespace UniversalShoppingSystem
             public Action hook;
             public override void OnEnter()
             {
-                hook.Invoke();
+                hook?.Invoke();
                 Finish();
             }
         }
