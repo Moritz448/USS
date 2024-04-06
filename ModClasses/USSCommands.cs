@@ -6,17 +6,11 @@ namespace UniversalShoppingSystem
 {
     public class USSCommands : ConsoleCommand
     {
-
         List<GameObject> shopGameObjects = new List<GameObject>();
 
-        // What the player has to type into the console to execute your commnad
         public override string Name => "uss";
-
-        // The help that's displayed for your command when typing help
         public override string Help => "'uss shop list': Parents a USS shop specified to store_inside to make positioning via Developer Toolset easier. When finished, copy the transform values with devtoolset and enter them in the unity component.";
 
-
-        // The function that's called when executing command
         public override void Run(string[] args)
         {
             switch (args[0])
@@ -46,6 +40,5 @@ namespace UniversalShoppingSystem
                     break;
             }
         }
-
     }
 }

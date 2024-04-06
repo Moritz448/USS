@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 
 using ExpandedShop;
-using Harmony;
 
 namespace UniversalShoppingSystem
 {
@@ -22,16 +21,11 @@ namespace UniversalShoppingSystem
 
         private bool cartIconShowing;
 
-        private IEnumerator PatchES()
-        {
-            GameObject.Find("STORE/TeimoDrinksMod(Clone)").GetComponent<ShopRaycast>().ApplyFsmBool = false;
-            yield break;
-        }
         private void Awake()
         {
-            if (ModLoader.IsModPresent("ExpandedShop"))
+            if (ModLoader.IsModPresent("ExpandedShop")) // Loading up the ES compatibility stuff, including version check
             {
-                StartCoroutine(PatchES());
+                GameObject.Find("STORE/TeimoDrinksMod(Clone)").GetComponent<ShopRaycast>().ApplyFsmBool = false;
 
                 if (System.Convert.ToDecimal(ModLoader.GetMod("ExpandedShop").Version) < 1.1m)
                 {

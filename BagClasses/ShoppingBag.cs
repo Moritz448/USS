@@ -31,7 +31,6 @@ namespace UniversalShoppingSystem
                     }
 
                     else if (!BagContent[i].GetComponent<USSItem>()) ModConsole.LogError("UniversalShoppingSystem: Found no shop system item behaviour on item " + i + "!");
-
                     es.shoplist.Clear();
                 }
             }

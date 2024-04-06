@@ -7,21 +7,21 @@ namespace UniversalShoppingSystem
 {
     public class USSBagSetupAction : FsmStateAction
     {
-        public FsmGameObject bag;
-        public ItemShop shop;
+        public FsmGameObject Bag;
+        public ItemShop Shop;
         public override void OnEnter()
         {
-            USSBagInventory inv = bag.Value.GetComponent<USSBagInventory>();
-            if (inv == null)
+            USSBagInventory BagInventory = Bag.Value.GetComponent<USSBagInventory>();
+            if (BagInventory == null)
             {
-                inv = bag.Value.AddComponent<USSBagInventory>();
-                if (shop.SpawnInBag) shop.SpawnBag(inv);
-                USSBagSetupOpenAction act = bag.Value.AddComponent<USSBagSetupOpenAction>();
+                BagInventory = Bag.Value.AddComponent<USSBagInventory>();
+                if (Shop.SpawnInBag) Shop.SpawnBag(BagInventory);
 
-                act.bag = bag.Value;
-                act.inv = inv;
+                USSBagSetupOpenAction act = Bag.Value.AddComponent<USSBagSetupOpenAction>();
+                act.Bag = Bag.Value;
+                act.BagInventory = BagInventory;
             }
-            else if (shop.SpawnInBag) shop.SpawnBag(inv);
+            else if (Shop.SpawnInBag) Shop.SpawnBag(BagInventory);
                 
             Finish();
         }
@@ -29,8 +29,8 @@ namespace UniversalShoppingSystem
     public class USSBagSetupOpenAction : MonoBehaviour
     {
         PlayMakerFSM use;
-        public USSBagInventory inv;
-        public GameObject bag;
+        public USSBagInventory BagInventory;
+        public GameObject Bag;
 
         void Start() => StartCoroutine(Setup());
         
@@ -38,20 +38,20 @@ namespace UniversalShoppingSystem
         {
             yield return new WaitForSeconds(0.4f);
 
-            use = bag.GetComponent<PlayMakerFSM>();
+            use = Bag.GetComponent<PlayMakerFSM>();
 
             use.GetState("Spawn one").InsertAction(0, new USSBagOpenAction
             {
-                Arrays = bag.GetComponents<PlayMakerArrayListProxy>(),
+                Arrays = Bag.GetComponents<PlayMakerArrayListProxy>(),
                 OpenAll = false,
-                inv = inv
+                BagInventory = BagInventory
             });
 
             use.GetState("Spawn all").InsertAction(0, new USSBagOpenAction
             {
-                Arrays = bag.GetComponents<PlayMakerArrayListProxy>(),
+                Arrays = Bag.GetComponents<PlayMakerArrayListProxy>(),
                 OpenAll = true,
-                inv = inv
+                BagInventory = BagInventory
             });
 
             Object.Destroy(this);

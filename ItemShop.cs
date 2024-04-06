@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
+using MSCLoader;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using MSCLoader;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace UniversalShoppingSystem
@@ -17,6 +17,7 @@ namespace UniversalShoppingSystem
         public string ShopID = "Unique ID for Save/Load management";
         public string ItemName = "Shop Item Name";
         public float ItemPrice;
+
         [Header("Relative to store_inside")]
         public Vector3 TriggerPosition;
         public Vector3 TriggerRotation;
@@ -38,8 +39,8 @@ namespace UniversalShoppingSystem
 
         private int itemsBought;
 
-        private PlayMakerFSM register; // Required to hook paying mechanics
-        private PlayMakerFSM registerData;
+        private PlayMakerFSM register;           // Required to hook paying mechanics
+        private PlayMakerFSM registerData;       // Required to hook bag creation mechanics
         private GameObject vanillaShopInventory; // Required to hook restock mechanics
 
         public void SaveShop(Mod mod)
@@ -122,16 +123,16 @@ namespace UniversalShoppingSystem
                             continue;
                         }
 
-                        USSBagInventory baginv = bag.GetComponent<USSBagInventory>();
-                        if (baginv == null)
+                        USSBagInventory bagBagInventory = bag.GetComponent<USSBagInventory>();
+                        if (bagBagInventory == null)
                         {
-                            baginv = bag.AddComponent<USSBagInventory>();
-                            baginv.BagContent = new List<GameObject> { obj };
+                            bagBagInventory = bag.AddComponent<USSBagInventory>();
+                            bagBagInventory.BagContent = new List<GameObject> { obj };
                             USSBagSetupOpenAction act = bag.AddComponent<USSBagSetupOpenAction>();
-                            act.bag = bag;
-                            act.inv = baginv;
+                            act.Bag = bag;
+                            act.BagInventory = bagBagInventory;
                         }
-                        else baginv.BagContent.Add(obj);
+                        else bagBagInventory.BagContent.Add(obj);
                     }
 
                     else obj.SetActive(true);
@@ -142,12 +143,12 @@ namespace UniversalShoppingSystem
 
         public class CreateBagAction : FsmStateAction
         {
-            public ItemShop shop;
-            public FsmInt check;
+            public ItemShop Shop;
+            public FsmInt Check;
 
             public override void OnEnter()
             {
-                if (shop.Cart > 0) if (check.Value == 0) Fsm.Event("FINISHED");
+                if (Shop.Cart > 0) if (Check.Value == 0) Fsm.Event("FINISHED");
                 Finish();
             }
         }
@@ -167,7 +168,7 @@ namespace UniversalShoppingSystem
             if (ShopID == "Unique ID for Save/Load management") ModConsole.Error("UniversalShoppingSystem: ShopID of " + ItemName + " is still default!");
 
             if (!GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>()) GameObject.Find("PLAYER").AddComponent<ItemShopRaycast>();
-            GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>().Shops.Add(this); // Add shop for commands etc
+            GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>().Shops.Add(this); // Add shop for commands, unique id check etc.
 
             register = GameObject.Find("STORE/StoreCashRegister/Register").GetComponent<PlayMakerFSM>();
             vanillaShopInventory = GameObject.Find("STORE/Inventory");
@@ -175,17 +176,16 @@ namespace UniversalShoppingSystem
             registerData.InitializeFSM();
 
             GameHook.InjectStateHook(register.gameObject, "Purchase", () => { Pay(); });
-            vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this });
+            vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this }); // Inject paying and restock mechanics
 
-            this.transform.SetParent(GameObject.Find("STORE").transform.Find("LOD").transform.Find("GFX_Store").transform.Find("store_inside"), false);
-            this.transform.localEulerAngles = TriggerRotation;
-            this.transform.localPosition = TriggerPosition;
-            this.transform.SetParent(null, true); // Needs to be parented to root in order to stay active all the time to not cause problems with restocking; Might change.
+            transform.SetParent(GameObject.Find("STORE").transform.Find("LOD").transform.Find("GFX_Store").transform.Find("store_inside"), false);
+            transform.localEulerAngles = TriggerRotation;
+            transform.localPosition = TriggerPosition;
+            transform.SetParent(null, true); // Needs to be parented to root in order to stay active all the time to not cause problems with restocking
 
-            Stock = this.transform.childCount;
-            Cart = 0;
-            itemsBought = 0;
-            Restock(); // Might change later for more convenient save loading
+            Stock = transform.childCount;
+            Cart = itemsBought = 0;
+            Restock(); // Fully restock, save data overrides the values
 
             if (SpawnInBag) // Only setup the whole stuff when items should spawn in bags
             {
@@ -195,19 +195,19 @@ namespace UniversalShoppingSystem
                 fsm.InitializeFSM();
                 fsm.GetState("Copy contents").InsertAction(0, new USSBagSetupAction
                 {
-                    bag = (fsm.GetState("Copy contents").Actions.First(action => action is ArrayListCopyTo) as ArrayListCopyTo).gameObjectTarget.GameObject,
-                    shop = this
+                    Bag = (fsm.GetState("Copy contents").Actions.First(action => action is ArrayListCopyTo) as ArrayListCopyTo).gameObjectTarget.GameObject,
+                    Shop = this
                 });
                 // Abusing the oil filter shop for our purposes
                 registerData.GetState("Oil filter").InsertAction(0, new CreateBagAction
                 {
-                    shop = this,
-                    check = registerData.FsmVariables.FindFsmInt("QOilfilter")
+                    Shop = this,
+                    Check = registerData.FsmVariables.FindFsmInt("QOilfilter")
                 });
             }
         }
         
-        public void TookOutOfBag() => OnBagTakeout?.Invoke();
+        public void TookOutOfBag() => OnBagTakeout?.Invoke(); // Called by BagOpenAction
         
         private void Restock()
         {
@@ -223,28 +223,29 @@ namespace UniversalShoppingSystem
             yield break;
         }
 
-        public void SpawnBag(USSBagInventory inv)
+        public void SpawnBag(USSBagInventory BagInventory)
         {
-            if (this.SpawnInBag) StartCoroutine(BagSpawner(inv));
+            if (this.SpawnInBag) StartCoroutine(BagSpawner(BagInventory));
         }
 
-        private IEnumerator BagSpawner(USSBagInventory invent)
+        private IEnumerator BagSpawner(USSBagInventory BagInventoryent)
         {
-            yield return new WaitForSeconds(0.31f);
+            yield return new WaitForSeconds(0.31f); // wait slightly longer than expandedshop
             itemsBought += Cart;
             while (Cart > 0)
             {
                 Cart--;
+
                 GameObject item = GameObject.Instantiate(ItemPrefab);
                 item.SetActive(false);
-                invent.BagContent.Add(item);
-                BoughtItems.Add(item); // For Saving/Loading
+                BagInventoryent.BagContent.Add(item);
+                BoughtItems.Add(item); // Track item for saving/loading
+
                 USSItem ussitm = item.GetComponent<USSItem>();
                 ussitm.InBag = true;
                 ussitm.OriginShop = this;
                 yield return null;
             }
-
             yield break;
         }
 
@@ -269,18 +270,17 @@ namespace UniversalShoppingSystem
             register.SendEvent("PURCHASE");
         }
 
-        private void Pay()
+        private void Pay() // Called on checkout at register
         {
             if (this.Cart > 0) OnBuy?.Invoke();
             
-            if (!this.SpawnInBag) // When its a big item...
+            if (!this.SpawnInBag) // When its a big item run this, if it spawns in bag SpawnBag gets called
             {
                 for (int i = 0; i < Cart; i++)
                 {
                     GameObject item = GameObject.Instantiate(ItemPrefab);
-                    this.BoughtItems.Add(item);
+                    BoughtItems.Add(item);
                     item.transform.position = bigItemSpawnPosition;
-                    item.GetComponent<Rigidbody>().isKinematic = false;
                     item.SetActive(true);
                 }
                 itemsBought += Cart;
