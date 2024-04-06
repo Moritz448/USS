@@ -1,10 +1,10 @@
-﻿using ExpandedShop;
-using Harmony;
-using HutongGames.PlayMaker;
+﻿using UnityEngine;
 using MSCLoader;
+using HutongGames.PlayMaker;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+
+using ExpandedShop;
 
 namespace UniversalShoppingSystem
 {
@@ -20,8 +20,6 @@ namespace UniversalShoppingSystem
         private FsmBool storeOpen;
 
         private bool cartIconShowing;
-
-        private static readonly HarmonyInstance harmony = HarmonyInstance.Create("UniversalShoppingSystem");
 
         private IEnumerator PatchES()
         {

@@ -22,7 +22,5 @@ namespace UniversalShoppingSystem
                     ModUI.CreateMessageBoxBtn("I will", () => { }, false)
                 });
         }
-        
     }
-    
 }
