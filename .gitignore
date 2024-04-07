@@ -6,3 +6,4 @@
 *.sln
 *.csproj
 /Properties/*
+/Releases/*
