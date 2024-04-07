@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using MSCLoader;
+/*using MSCLoader;
 using HutongGames.PlayMaker;
-using HutongGames.PlayMaker.Actions;
+using HutongGames.PlayMaker.Actions;*/
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,17 +24,19 @@ namespace UniversalShoppingSystem
 
         public GameObject ItemPrefab;
         public bool SpawnInBag;
-        
-        // After here nothing is important for the setup in unity, so the following fields are not included in the mini dll
+
+        /*
+        // FOLLOWING NOT NEEDED FOR UNITY SETUP; THEREFORE NOT INCLUDED IN MINI DLL
+
         public List<GameObject> BoughtItems = new List<GameObject>(); // Used for saving, no need to change in inspector!
 
         public event ShopEvent OnBuy;
         public event ShopEvent OnRestock;
 
-        private Vector3 bigItemSpawnPosition = new Vector3(-1551.303f, 4.88f, 1181.904f);
-
         public int Stock;
         public int Cart;
+        
+        private Vector3 bigItemSpawnPosition = new Vector3(-1551.303f, 4.88f, 1181.904f);
 
         private int itemsBought;
 
@@ -288,6 +290,6 @@ namespace UniversalShoppingSystem
                 itemsBought += Cart;
                 Cart = 0;
             }
-        }
+        }*/
     }
 }

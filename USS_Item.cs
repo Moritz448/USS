@@ -1,15 +1,16 @@
 ﻿using UnityEngine;
-using MSCLoader;
+//using MSCLoader;
 using System.Collections;
 
-using FridgeAPI;
+//using FridgeAPI;
 
 namespace UniversalShoppingSystem
 {
     public class USSItem : MonoBehaviour
     {
         public bool CanSpoil = false;
-        
+        public float SpoilingMultiplicator = 1f;
+        /*
         // None of those should be set up in unity editor, they're set on runtime. Therefore not included in mini dll!
         public bool InBag;
         public string BagID;
@@ -33,9 +34,9 @@ namespace UniversalShoppingSystem
         {
             while (true)
             {
-                if ((transform.position - fridge.position).sqrMagnitude < 0.20249999f) Condition -= spoilingRateFridge; // When in vanilla fridge
-                else if (inFAPIFridge) Condition -= FAPISpoilingRate; // When in FridgeAPI fridge
-                else Condition -= globalSpoilingRate; // Else must be uncooled
+                if ((transform.position - fridge.position).sqrMagnitude < 0.20249999f) Condition -= spoilingRateFridge * SpoilingMultiplicator; // When in vanilla fridge
+                else if (inFAPIFridge) Condition -= FAPISpoilingRate * SpoilingMultiplicator; // When in FridgeAPI fridge
+                else Condition -= globalSpoilingRate * SpoilingMultiplicator; // Else must be uncooled
                 
                 if (Condition < 1f) break; // When the item is rotten
                 yield return new WaitForSeconds(1f);
@@ -77,6 +78,6 @@ namespace UniversalShoppingSystem
                 Fridge fridge = coll.GetComponent<Fridge>();
                 if (fridge != null) FAPISpoilingRate = fridge.FridgeSpoilingRate;  
             }
-        }
+        }*/
     }
 }

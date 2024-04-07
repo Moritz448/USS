@@ -1,4 +1,4 @@
-﻿using MSCLoader;
+﻿/*using MSCLoader;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -41,4 +41,4 @@ namespace UniversalShoppingSystem
             }
         }
     }
-}
+}*/
