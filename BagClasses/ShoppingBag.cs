@@ -1,4 +1,4 @@
-﻿/*using UnityEngine;
+﻿using UnityEngine;
 using MSCLoader;
 using System.Collections;
 using System.Collections.Generic;
@@ -51,4 +51,4 @@ namespace UniversalShoppingSystem
             yield break;
         }
     }
-}*/
+}

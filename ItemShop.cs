@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-/*using MSCLoader;
+using MSCLoader;
 using HutongGames.PlayMaker;
-using HutongGames.PlayMaker.Actions;*/
+using HutongGames.PlayMaker.Actions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +25,7 @@ namespace UniversalShoppingSystem
         public GameObject ItemPrefab;
         public bool SpawnInBag;
 
-        /*
+       
         // FOLLOWING NOT NEEDED FOR UNITY SETUP; THEREFORE NOT INCLUDED IN MINI DLL
 
         public List<GameObject> BoughtItems = new List<GameObject>(); // Used for saving, no need to change in inspector!
@@ -290,6 +290,6 @@ namespace UniversalShoppingSystem
                 itemsBought += Cart;
                 Cart = 0;
             }
-        }*/
+        }
     }
 }

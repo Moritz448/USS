@@ -1,4 +1,4 @@
-﻿/*using UnityEngine;
+﻿using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
 
@@ -99,4 +99,4 @@ namespace UniversalShoppingSystem
             return num == 0;
         }
     }
-}*/
+}

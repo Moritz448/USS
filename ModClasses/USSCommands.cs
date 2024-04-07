@@ -1,4 +1,4 @@
-﻿/*using MSCLoader;
+﻿using MSCLoader;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +9,7 @@ namespace UniversalShoppingSystem
         List<GameObject> shopGameObjects = new List<GameObject>();
 
         public override string Name => "uss";
-        public override string Help => "'uss shop list': Parents a USS shop specified to store_inside to make positioning via Developer Toolset easier. When finished, copy the transform values with devtoolset and enter them in the unity component.";
+        public override string Help => "'uss list': Returns a list of all loaded USS shops with their index required for uss move\n'uss move [index]': Parents a USS shop specified to store_inside to make positioning via Developer Toolset easier. When finished, copy the transform values with devtoolset and enter them in the unity component.";
 
         public override void Run(string[] args)
         {
@@ -41,4 +41,4 @@ namespace UniversalShoppingSystem
             }
         }
     }
-}*/
+}

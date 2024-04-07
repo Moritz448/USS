@@ -1,4 +1,4 @@
-﻿/*using UnityEngine;
+﻿using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
 using System.Collections;
@@ -59,4 +59,4 @@ namespace UniversalShoppingSystem
             yield break;
         }
     }
-}*/
+}

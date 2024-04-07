@@ -1,4 +1,4 @@
-﻿/*using MSCLoader;
+﻿using MSCLoader;
 
 namespace UniversalShoppingSystem
 {
@@ -15,4 +15,4 @@ namespace UniversalShoppingSystem
         private void Mod_OnMenuLoad() => ModUI.ShowCustomMessage("USS is not a mod. Move it to the References folder or delete it and let MSCLoader download the latest version automatically.",
             "READ ME", new MsgBoxBtn[] { ModUI.CreateMessageBoxBtn("I will", () => { }, false) });  
     }
-}*/
+}
