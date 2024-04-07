@@ -24,7 +24,7 @@ namespace UniversalShoppingSystem
 
         public GameObject ItemPrefab;
         public bool SpawnInBag;
-
+        
         // After here nothing is important for the setup in unity, so the following fields are not included in the mini dll
         public List<GameObject> BoughtItems = new List<GameObject>(); // Used for saving, no need to change in inspector!
 

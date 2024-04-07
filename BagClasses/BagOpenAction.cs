@@ -33,6 +33,7 @@ namespace UniversalShoppingSystem
                 ussitm.InBag = false;
                 ussitm.OriginShop.BoughtItems.Add(itm.gameObject);
                 ussitm.Condition = Fsm.Variables.FindFsmFloat("Condition").Value;
+                ussitm.StartSpoiling();
             }
             else if (ModLoader.IsModPresent("ExpandedShop") && CheckForModItem(itm)) TakeModItemOut(itm); // else it has to be an expanded shop item.
 
@@ -69,6 +70,8 @@ namespace UniversalShoppingSystem
                         ussitm.InBag = false;
                         ussitm.OriginShop.BoughtItems.Add(BagInventory.BagContent[i].gameObject);
                         ussitm.Condition = Fsm.Variables.FindFsmFloat("Condition").Value;
+                        ussitm.StartSpoiling();
+                        ussitm.OriginShop.TookOutOfBag(); // Run user-provided actions
                     }
                     else if (ModLoader.IsModPresent("ExpandedShop")) TakeModItemOut(BagInventory.BagContent[i].transform); // Else it has to be an expanded shop item.
                 }

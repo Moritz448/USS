@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
+using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
-using System.Collections;
 using System.Collections.Generic;
 
 using ExpandedShop;

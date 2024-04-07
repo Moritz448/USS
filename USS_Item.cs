@@ -1,6 +1,6 @@
-﻿using MSCLoader;
+﻿using UnityEngine;
+using MSCLoader;
 using System.Collections;
-using UnityEngine;
 
 using FridgeAPI;
 
@@ -9,7 +9,7 @@ namespace UniversalShoppingSystem
     public class USSItem : MonoBehaviour
     {
         public bool CanSpoil = false;
-
+        
         // None of those should be set up in unity editor, they're set on runtime. Therefore not included in mini dll!
         public bool InBag;
         public string BagID;
@@ -26,8 +26,7 @@ namespace UniversalShoppingSystem
         private float FAPISpoilingRate;
         
         private Coroutine spoiling;
-
-        private void OnEnable() => StartSpoiling();
+        
         public void StartSpoiling() { if (spoiling == null && CanSpoil) spoiling = StartCoroutine(Spoil()); }
 
         public IEnumerator Spoil()
@@ -40,15 +39,16 @@ namespace UniversalShoppingSystem
                 
                 if (Condition < 1f) break; // When the item is rotten
                 yield return new WaitForSeconds(1f);
-                Condition = 0f;
-
-                if (!gameObject.name.ToLower().Contains("spoiled"))
-                {
-                    gameObject.name = "Spoiled " + gameObject.name;
-                }
-
-                Spoiled = true;
             }
+
+            Condition = 0f;
+
+            if (!gameObject.name.ToLower().Contains("spoiled"))
+            {
+                gameObject.name = "Spoiled " + gameObject.name;
+            }
+
+            Spoiled = true;
         }
 
         
@@ -56,7 +56,7 @@ namespace UniversalShoppingSystem
         {
             if (ModLoader.IsModPresent("FridgeAPI"))
             {
-                Fridge fridge = coll.gameObject.GetComponent<Fridge>();
+                Fridge fridge = coll.GetComponent<Fridge>();
                 if (fridge != null)
                 {
                     inFAPIFridge = true;
@@ -67,7 +67,16 @@ namespace UniversalShoppingSystem
 
         private void OnTriggerExit(Collider coll)
         {
-            if (ModLoader.IsModPresent("FridgeAPI")) if (coll.gameObject.GetComponent<Fridge>()) inFAPIFridge = false;
+            if (ModLoader.IsModPresent("FridgeAPI")) if (coll.GetComponent<Fridge>()) inFAPIFridge = false;
+        }
+
+        private void OnTriggerStay(Collider coll)
+        {
+            if (ModLoader.IsModPresent("FridgeAPI"))
+            {
+                Fridge fridge = coll.GetComponent<Fridge>();
+                if (fridge != null) FAPISpoilingRate = fridge.FridgeSpoilingRate;  
+            }
         }
     }
 }
