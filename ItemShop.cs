@@ -29,7 +29,6 @@ namespace UniversalShoppingSystem
         public List<GameObject> BoughtItems = new List<GameObject>(); // Used for saving, no need to change in inspector!
 
         public event ShopEvent OnBuy;
-        public event ShopEvent OnBagTakeout;
         public event ShopEvent OnRestock;
 
         private Vector3 bigItemSpawnPosition = new Vector3(-1551.303f, 4.88f, 1181.904f);
@@ -206,8 +205,6 @@ namespace UniversalShoppingSystem
                 });
             }
         }
-        
-        public void TookOutOfBag() => OnBagTakeout?.Invoke(); // Called by BagOpenAction
         
         private void Restock()
         {

@@ -11,7 +11,6 @@ namespace UniversalShoppingSystem
         public USSBagInventory BagInventory;
         public bool OpenAll = false;
         public PlayMakerArrayListProxy[] Arrays;
-
         private bool CheckForModItem(Transform item) { return item.GetComponent<ModItem>(); }
         private void TakeModItemOut(Transform item) // For Expanded Shop
         {
@@ -31,24 +30,22 @@ namespace UniversalShoppingSystem
             {
                 USSItem ussitm = itm.GetComponent<USSItem>();
                 ussitm.InBag = false;
-                ussitm.OriginShop.BoughtItems.Add(itm.gameObject);
                 ussitm.Condition = Fsm.Variables.FindFsmFloat("Condition").Value;
                 ussitm.StartSpoiling();
             }
             else if (ModLoader.IsModPresent("ExpandedShop") && CheckForModItem(itm)) TakeModItemOut(itm); // else it has to be an expanded shop item.
 
             BagInventory.BagContent.Remove(itm.gameObject);
-
             if (CheckVanillaEmpty()) MasterAudio.PlaySound3DAndForget("HouseFoley", BagInventory.transform, false, 1f, 1f, 0f, "plasticbag_open2");
 
             FsmVariables.GlobalVariables.FindFsmString("GUIinteraction").Value = "";
+
             if (BagInventory.BagContent.Count == 0)
             {
                 if (CheckVanillaEmpty()) Fsm.Event("GARBAGE");
                 Object.Destroy(BagInventory);
-            }
-
-            itm.GetComponent<USSItem>().OriginShop.TookOutOfBag(); // Run user-provided actions
+            }            
+            
             Fsm.Event("FINISHED");
 
         }
@@ -68,10 +65,8 @@ namespace UniversalShoppingSystem
                     if (ussitm != null) // If its an USS item...
                     {
                         ussitm.InBag = false;
-                        ussitm.OriginShop.BoughtItems.Add(BagInventory.BagContent[i].gameObject);
                         ussitm.Condition = Fsm.Variables.FindFsmFloat("Condition").Value;
                         ussitm.StartSpoiling();
-                        ussitm.OriginShop.TookOutOfBag(); // Run user-provided actions
                     }
                     else if (ModLoader.IsModPresent("ExpandedShop")) TakeModItemOut(BagInventory.BagContent[i].transform); // Else it has to be an expanded shop item.
                 }
