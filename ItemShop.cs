@@ -119,6 +119,7 @@ namespace UniversalShoppingSystem
                         {
                             ModConsole.LogWarning("UniversalShoppingSystem: Couldnt find bag; Spawning item outside.");
                             obj.SetActive(true);
+                            itm.StartSpoiling();
                             continue;
                         }
 
@@ -134,7 +135,11 @@ namespace UniversalShoppingSystem
                         else bagBagInventory.BagContent.Add(obj);
                     }
 
-                    else obj.SetActive(true);
+                    else
+                    {
+                        obj.SetActive(true);
+                        itm.StartSpoiling();
+                    }
                     BoughtItems.Add(obj); // Keep the item tracked for next save
                 }
             }
