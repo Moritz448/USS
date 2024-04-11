@@ -4,6 +4,8 @@ using HutongGames.PlayMaker;
 using System.Collections.Generic;
 
 using ExpandedShop;
+using System.Linq;
+using System.Net;
 
 namespace UniversalShoppingSystem
 {
@@ -12,7 +14,7 @@ namespace UniversalShoppingSystem
         public List<ItemShop> Shops = new List<ItemShop>();
 
         private Camera fpsCam;
-        private RaycastHit hit;
+        private RaycastHit[] hits;
 
         private FsmBool _guiBuy;
         private FsmString _guiText;
@@ -22,17 +24,19 @@ namespace UniversalShoppingSystem
 
         private void Awake()
         {
+            ConsoleCommand.Add(new USSCommands());
             if (ModLoader.IsModPresent("ExpandedShop")) // Loading up the ES compatibility stuff, including version check
             {
-                GameObject.Find("STORE/TeimoDrinksMod(Clone)").GetComponent<ShopRaycast>().ApplyFsmBool = false;
 
                 if (System.Convert.ToDecimal(ModLoader.GetMod("ExpandedShop").Version) < 1.1m)
                 {
                     ModUI.ShowCustomMessage("You are using an old version of ExpandedShop which is not compatible with UniversalShoppingSystem. Please update or uninstall ExpandedShop.", "Wrong Version", new MsgBoxBtn[]
-                {
+                    {
                     ModUI.CreateMessageBoxBtn("I will", () => { }, false)
-                });
+                    });
                 }
+
+                else GameObject.Find("STORE/TeimoDrinksMod(Clone)").GetComponent<ShopRaycast>().ApplyFsmBool = false;
             }
 
             fpsCam = GameObject.Find("PLAYER").transform.Find("Pivot/AnimPivot/Camera/FPSCamera/FPSCamera").GetComponent<Camera>();
@@ -56,18 +60,22 @@ namespace UniversalShoppingSystem
                 bool lmb = Input.GetKeyDown(KeyCode.Mouse0);
                 bool rmb = Input.GetKeyDown(KeyCode.Mouse1);
 
-                Physics.Raycast(fpsCam.ScreenPointToRay(Input.mousePosition), out hit, 1.35f);
+                hits = Physics.RaycastAll(fpsCam.ScreenPointToRay(Input.mousePosition), 1.35f)
+                    .Where(go => go.collider.GetComponent<ItemShop>())
+                    .ToArray();
 
-                if (hit.collider != null) if (hit.collider.gameObject.GetComponent<ItemShop>())
-                {
-                    ItemShop shop = hit.collider.gameObject.GetComponent<ItemShop>();
-                    cartIconShowing = true;
-                    _guiBuy.Value = true;
-                    _guiText.Value = $"{shop.ItemName} {shop.ItemPrice} mk";
 
-                    if (lmb && shop.Stock > 0) shop.Buy();
-                    else if (rmb && shop.Cart > 0) shop.Unbuy();
-                }
+                if (hits != null) foreach (ItemShop shop in hits.Select(hit => hit.collider.GetComponent<ItemShop>()))
+                    {
+                        cartIconShowing = true;
+                        _guiBuy.Value = true;
+                        _guiText.Value = $"{shop.ItemName} {shop.ItemPrice} mk";
+
+                        if (lmb && shop.Stock > 0) shop.Buy();
+                        else if (rmb && shop.Cart > 0) shop.Unbuy();
+
+                        break;
+                    }
 
                 else if (cartIconShowing)
                 {
