@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 using ExpandedShop;
-using System.Linq;
-using System.Net;
+
 
 namespace UniversalShoppingSystem
 {
@@ -22,6 +23,13 @@ namespace UniversalShoppingSystem
 
         private bool cartIconShowing;
 
+        private IEnumerator ToggleESBool() // Due to load order depending on the dll names (alphabetical order), the script needs to wait until ExpandedShop instantiated its components
+        {
+            while (GameObject.Find("STORE/TeimoDrinksMod(Clone)") == null) yield return new WaitForSeconds(0.3f);
+            GameObject.Find("STORE/TeimoDrinksMod(Clone)").GetComponent<ShopRaycast>().ApplyFsmBool = false;
+            yield break;
+        }
+
         private void Awake()
         {
             ConsoleCommand.Add(new USSCommands());
@@ -36,7 +44,7 @@ namespace UniversalShoppingSystem
                     });
                 }
 
-                else GameObject.Find("STORE/TeimoDrinksMod(Clone)").GetComponent<ShopRaycast>().ApplyFsmBool = false;
+                else StartCoroutine(ToggleESBool());
             }
 
             fpsCam = GameObject.Find("PLAYER").transform.Find("Pivot/AnimPivot/Camera/FPSCamera/FPSCamera").GetComponent<Camera>();
