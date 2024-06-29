@@ -16,7 +16,7 @@ namespace UniversalShoppingSystem
         public string BagID;
         public ItemShop OriginShop;
         public float Condition = 100f;
-        public bool Spoiled;
+        public bool Spoiled { get; private set; }
 
         public bool cooled; // Used to communicate to the outside whether the item is cooled or not.
         private bool inFAPIFridge = false;
