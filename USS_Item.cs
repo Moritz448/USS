@@ -39,9 +39,12 @@ namespace UniversalShoppingSystem
 
         private IEnumerator detectCooling()
         {
-            inVanillaFridge = (transform.position - fridge.position).sqrMagnitude < 0.20249999f;
-            Cooled = inVanillaFridge || inFAPIFridge;
-            yield break;
+            while (true)
+            {
+                inVanillaFridge = (transform.position - fridge.position).sqrMagnitude < 0.20249999f;
+                Cooled = inVanillaFridge || inFAPIFridge;
+                yield return new WaitForSeconds(1f);
+            }
         }
 
         public IEnumerator Spoil()
