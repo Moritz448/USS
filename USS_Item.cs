@@ -19,9 +19,11 @@ namespace UniversalShoppingSystem
         public bool Spoiled;
 
         public bool cooled; // Used to communicate to the outside whether the item is cooled or not.
+        private bool inFAPIFridge = false;
+        private bool inVanillaFridge = false;
 
         private readonly Transform fridge = GameObject.Find("YARD").transform.Find("Building/KITCHEN/Fridge/FridgePoint/ChillArea");
-        private bool inFAPIFridge = false;
+       
 
         private readonly float globalSpoilingRate = 0.06f;
         private readonly float spoilingRateFridge = 0.001f;
@@ -38,7 +40,8 @@ namespace UniversalShoppingSystem
 
         private IEnumerator detectCooling()
         {
-            
+            inVanillaFridge = (transform.position - fridge.position).sqrMagnitude < 0.20249999f;
+            cooled = inVanillaFridge || inFAPIFridge;
             yield break;
         }
 
