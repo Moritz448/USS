@@ -29,22 +29,16 @@ namespace UniversalShoppingSystem
         private float FAPISpoilingRate;
         
         private Coroutine spoiling;
-        private Coroutine coolingDetection;
         
         public void StartSpoiling() 
         { 
             if (spoiling == null && CanSpoil) spoiling = StartCoroutine(Spoil());
-            if (coolingDetection == null) coolingDetection = StartCoroutine(detectCooling());
         }
 
-        private IEnumerator detectCooling()
+        private void Update()
         {
-            while (true)
-            {
-                inVanillaFridge = (transform.position - fridge.position).sqrMagnitude < 0.20249999f;
-                Cooled = inVanillaFridge || inFAPIFridge;
-                yield return new WaitForSeconds(1f);
-            }
+            inVanillaFridge = (transform.position - fridge.position).sqrMagnitude < 0.20249999f;
+            Cooled = inVanillaFridge || inFAPIFridge; 
         }
 
         public IEnumerator Spoil()
