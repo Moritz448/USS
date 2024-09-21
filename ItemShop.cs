@@ -147,7 +147,7 @@ namespace UniversalShoppingSystem
             }
         }
 
-        public class CreateBagAction : FsmStateAction
+        private class CreateBagAction : FsmStateAction
         {
             public ItemShop Shop;
             public FsmInt Check;
@@ -159,7 +159,7 @@ namespace UniversalShoppingSystem
             }
         }
 
-        public class RestockAction : FsmStateAction
+        private class RestockAction : FsmStateAction
         {
             public ItemShop shop;
             public override void OnEnter()
@@ -169,7 +169,7 @@ namespace UniversalShoppingSystem
             }
         }
 
-        private void Awake()
+        private void Start()
         {
             if (ShopID == "Unique ID for Save/Load management") ModConsole.Error("UniversalShoppingSystem: ShopID of " + ItemName + " is still default!");
 
@@ -227,7 +227,7 @@ namespace UniversalShoppingSystem
             yield break;
         }
 
-        public void SpawnBag(USSBagInventory BagInventory)
+        internal void SpawnBag(USSBagInventory BagInventory)
         {
             if (this.SpawnInBag) StartCoroutine(BagSpawner(BagInventory));
         }
@@ -253,7 +253,7 @@ namespace UniversalShoppingSystem
             yield break;
         }
 
-        public void Buy() // Put item in Cart
+        internal void Buy() // Put item in Cart
         {
             Stock--;
             Cart++;
@@ -264,7 +264,7 @@ namespace UniversalShoppingSystem
             register.SendEvent("PURCHASE");
         }
 
-        public void Unbuy() // Take item back out of Cart
+        internal void Unbuy() // Take item back out of Cart
         {
             this.transform.GetChild(Cart - 1 + itemsBought).gameObject.SetActive(true);
             Stock++;

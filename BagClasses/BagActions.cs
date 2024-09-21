@@ -5,7 +5,7 @@ using System.Collections;
 
 namespace UniversalShoppingSystem
 {
-    public class USSBagSetupAction : FsmStateAction
+    internal class USSBagSetupAction : FsmStateAction
     {
         public FsmGameObject Bag;
         public ItemShop Shop;
@@ -26,7 +26,7 @@ namespace UniversalShoppingSystem
             Finish();
         }
     }
-    public class USSBagSetupOpenAction : MonoBehaviour
+    internal class USSBagSetupOpenAction : MonoBehaviour
     {
         PlayMakerFSM use;
         public USSBagInventory BagInventory;

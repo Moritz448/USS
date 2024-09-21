@@ -6,7 +6,7 @@ using ExpandedShop;
 
 namespace UniversalShoppingSystem
 {
-    public class USSBagOpenAction : FsmStateAction
+    internal class USSBagOpenAction : FsmStateAction
     {
         public USSBagInventory BagInventory;
         public bool OpenAll = false;

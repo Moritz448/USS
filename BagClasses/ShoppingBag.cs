@@ -7,7 +7,7 @@ using ExpandedShop;
 
 namespace UniversalShoppingSystem
 {
-    public class USSBagInventory : MonoBehaviour
+    private class USSBagInventory : MonoBehaviour
     {
         public List<GameObject> BagContent = new List<GameObject>();
 

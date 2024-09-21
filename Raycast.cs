@@ -30,7 +30,7 @@ namespace UniversalShoppingSystem
             yield break;
         }
 
-        private void Awake()
+        private void Start()
         {
             ConsoleCommand.Add(new USSCommands());
             if (ModLoader.IsModPresent("ExpandedShop")) // Loading up the ES compatibility stuff, including version check
