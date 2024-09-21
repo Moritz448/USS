@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
+
+#if !MINI
 using MSCLoader;
 using System.Collections;
 
 using FridgeAPI;
+#endif
 
 namespace UniversalShoppingSystem
 {
@@ -10,7 +13,9 @@ namespace UniversalShoppingSystem
     {
         public bool CanSpoil = false;
         public float SpoilingMultiplicator = 1f;
-        
+
+
+#if !MINI
         // None of those should be set up in unity editor, they're set on runtime. Therefore not included in mini dll!
         public bool InBag;
         public string BagID;
@@ -90,5 +95,7 @@ namespace UniversalShoppingSystem
                 if (fridge != null) FAPISpoilingRate = fridge.FridgeSpoilingRate;  
             }
         }
+#endif
+
     }
 }

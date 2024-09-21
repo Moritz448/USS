@@ -1,4 +1,6 @@
-﻿using MSCLoader;
+﻿#if !MINI
+
+using MSCLoader;
 
 namespace UniversalShoppingSystem
 {
@@ -16,3 +18,5 @@ namespace UniversalShoppingSystem
             "READ ME", new MsgBoxBtn[] { ModUI.CreateMessageBoxBtn("I will", () => { }, false) });  
     }
 }
+
+#endif

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#if !MINI
+
+using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
 using System.Linq;
@@ -95,3 +97,5 @@ namespace UniversalShoppingSystem
         }
     }
 }
+
+#endif

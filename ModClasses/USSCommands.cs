@@ -1,4 +1,6 @@
-﻿using MSCLoader;
+﻿#if !MINI
+
+using MSCLoader;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -42,3 +44,5 @@ namespace UniversalShoppingSystem
         }
     }
 }
+
+#endif

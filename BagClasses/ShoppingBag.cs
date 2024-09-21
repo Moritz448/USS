@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#if !MINI
+
+using UnityEngine;
 using MSCLoader;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +9,7 @@ using ExpandedShop;
 
 namespace UniversalShoppingSystem
 {
-    private class USSBagInventory : MonoBehaviour
+    internal class USSBagInventory : MonoBehaviour
     {
         public List<GameObject> BagContent = new List<GameObject>();
 
@@ -52,3 +54,5 @@ namespace UniversalShoppingSystem
         }
     }
 }
+
+#endif
