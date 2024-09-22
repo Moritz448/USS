@@ -48,6 +48,12 @@ namespace UniversalShoppingSystem
         private PlayMakerFSM registerData;       // Required to hook bag creation mechanics
         private GameObject vanillaShopInventory; // Required to hook restock mechanics
 
+
+        /// <summary>
+        /// Save the shop and all bought items
+        /// </summary>
+        /// <param name="mod">Mod Class the method is called from</param>
+     
         public void SaveShop(Mod mod)
         {
             // SHOP SAVING
@@ -82,6 +88,10 @@ namespace UniversalShoppingSystem
             SaveLoad.WriteValue<float>(mod, $"USS_{ShopID}_condition", condition);
         }
 
+        /// <summary>
+        /// Load shop and all bought items
+        /// </summary>
+        /// <param name="mod">Mod class the method is called from</param>
         public void LoadShop(Mod mod)
         {
             if (SaveLoad.ValueExists(mod, $"USS_{ShopID}_stock"))
@@ -257,6 +267,9 @@ namespace UniversalShoppingSystem
             yield break;
         }
 
+        /// <summary>
+        /// Add one item to the cart
+        /// </summary>
         internal void Buy() // Put item in Cart
         {
             Stock--;
@@ -268,6 +281,10 @@ namespace UniversalShoppingSystem
             register.SendEvent("PURCHASE");
         }
 
+
+        /// <summary>
+        /// Remove one item from the cart
+        /// </summary>
         internal void Unbuy() // Take item back out of Cart
         {
             this.transform.GetChild(Cart - 1 + itemsBought).gameObject.SetActive(true);

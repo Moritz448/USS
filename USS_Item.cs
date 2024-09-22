@@ -67,7 +67,6 @@ namespace UniversalShoppingSystem
 
             Spoiled = true;
         }
-
         
         private void OnTriggerEnter(Collider coll)
         {
