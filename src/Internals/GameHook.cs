@@ -29,45 +29,44 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace UniversalShoppingSystem
+namespace UniversalShoppingSystem;
+
+public class GameHook
 {
-    public class GameHook
+    private class FsmHookAction : FsmStateAction
     {
-        private class FsmHookAction : FsmStateAction
+        public Action hook;
+        public override void OnEnter()
         {
-            public Action hook;
-            public override void OnEnter()
-            {
-                hook?.Invoke();
-                Finish();
-            }
+            hook?.Invoke();
+            Finish();
         }
+    }
 
-        public static void InjectStateHook(GameObject gameObject, string stateName, Action hook)
+    public static void InjectStateHook(GameObject gameObject, string stateName, Action hook)
+    {
+        var state = GetStateFromGameObject(gameObject, stateName);
+        if (state != null)
         {
-            var state = GetStateFromGameObject(gameObject, stateName);
+            // inject our hook action to the state machine
+            var actions = new List<FsmStateAction>(state.Actions);
+            var hookAction = new FsmHookAction();
+            hookAction.hook = hook;
+            actions.Insert(0, hookAction);
+            state.Actions = actions.ToArray();
+        }
+    }
+
+    private static FsmState GetStateFromGameObject(GameObject obj, string stateName)
+    {
+        var comps = obj.GetComponents<PlayMakerFSM>();
+        foreach (var playMakerFsm in comps)
+        {
+            var state = playMakerFsm.FsmStates.FirstOrDefault(x => x.Name == stateName);
             if (state != null)
-            {
-                // inject our hook action to the state machine
-                var actions = new List<FsmStateAction>(state.Actions);
-                var hookAction = new FsmHookAction();
-                hookAction.hook = hook;
-                actions.Insert(0, hookAction);
-                state.Actions = actions.ToArray();
-            }
+                return state;
         }
-
-        private static FsmState GetStateFromGameObject(GameObject obj, string stateName)
-        {
-            var comps = obj.GetComponents<PlayMakerFSM>();
-            foreach (var playMakerFsm in comps)
-            {
-                var state = playMakerFsm.FsmStates.FirstOrDefault(x => x.Name == stateName);
-                if (state != null)
-                    return state;
-            }
-            return null;
-        }
+        return null;
     }
 }
 
