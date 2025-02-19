@@ -49,6 +49,8 @@ public class ItemShop : MonoBehaviour
     private PlayMakerFSM registerData;       // Required to hook bag creation mechanics
     private GameObject vanillaShopInventory; // Required to hook restock mechanics
 
+    internal static Dictionary<Collider, ItemShop> ShopLookup = new Dictionary<Collider, ItemShop>();
+
 
     /// <summary>
     /// Save the shop and all bought items
@@ -59,12 +61,7 @@ public class ItemShop : MonoBehaviour
         // SHOP SAVING
         try
         {
-            int childCount = transform.childCount;
-            List<bool> activeItems = new List<bool>(childCount);
-
-            for (int i = 0; i < childCount; i++) activeItems.Add(transform.GetChild(i).gameObject.activeInHierarchy);
-
-            ShopSave saveData = new ShopSave(activeItems, Stock + Cart, itemsBought);
+            ShopSave saveData = new ShopSave(Stock + Cart, itemsBought);
             SaveLoad.SerializeClass(mod, saveData, $"USS_{ShopID}");
         }
         catch (Exception ex) { ModConsole.LogError($"[USS] Failed to save shop: {ex.Message}\n{ex.StackTrace}"); }
@@ -111,10 +108,10 @@ public class ItemShop : MonoBehaviour
         {
             // SHOP LOADING
             ShopSave shopData = SaveLoad.DeserializeClass<ShopSave>(mod, $"USS_{ShopID}");
-            if (shopData != null && shopData.ActiveItems != null)
+            if (shopData != null)
             {
-                for (int i = 0; i < Mathf.Min(transform.childCount, shopData.ActiveItems.Count); i++) transform.GetChild(i).gameObject.SetActive(shopData.ActiveItems[i]);
                 Stock = shopData.Stock;
+                for (int i = 0; i < transform.childCount; i++) transform.GetChild(i).gameObject.SetActive(i >= (transform.childCount - Stock));
                 itemsBought = shopData.ItemsBought;
             }
             else ModConsole.LogError($"[USS] Failed to load shop data for {ShopID}: Save data is null or corrupted.");
@@ -294,6 +291,8 @@ public class ItemShop : MonoBehaviour
     {
         if (ShopID == "Unique ID for Save/Load management") ModConsole.Error("[USS]: ShopID of " + ItemName + " is still default!");
 
+        if (!ShopLookup.ContainsKey(GetComponent<Collider>())) ShopLookup[GetComponent<Collider>()] = this;
+
         GameObject player = GameObject.Find("PLAYER");
         ItemShopRaycast itemShopRaycast = player.GetComponent<ItemShopRaycast>() ?? player.AddComponent<ItemShopRaycast>();
         itemShopRaycast.Shops.Add(this); // Register shop for commands, unique id check etc.
@@ -320,6 +319,8 @@ public class ItemShop : MonoBehaviour
 
         if (SpawnInBag) SetupBagSpawning(store); // Only setup the whole stuff when items should spawn in bags     
     }
+
+    private void OnDestroy() => ShopLookup.Remove(GetComponent<Collider>());
 
     private void SetupBagSpawning(GameObject store)
     {

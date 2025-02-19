@@ -3,7 +3,6 @@
 using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -18,13 +17,14 @@ public class ItemShopRaycast : MonoBehaviour
     public List<ItemShop> Shops = new List<ItemShop>();
 
     private Camera fpsCam;
-    private RaycastHit[] hits;
 
     private FsmBool _guiBuy;
     private FsmString _guiText;
     private FsmBool storeOpen;
 
     private bool cartIconShowing;
+
+    private RaycastHit hit;
 
     private IEnumerator ToggleESBool() // Due to load order depending on the dll names (alphabetical order), the script needs to wait until ExpandedShop instantiated its components
     {
@@ -69,36 +69,33 @@ public class ItemShopRaycast : MonoBehaviour
 
     private void Update()
     {
-        if (storeOpen.Value)
+        if (!storeOpen.Value) return;
+
+        bool lmb = Input.GetKeyDown(KeyCode.Mouse0);
+        bool rmb = Input.GetKeyDown(KeyCode.Mouse1);
+
+        ItemShop shop = null;
+
+        if (UnifiedRaycast.GetHitName() != String.Empty)
         {
-            bool lmb = Input.GetKeyDown(KeyCode.Mouse0);
-            bool rmb = Input.GetKeyDown(KeyCode.Mouse1);
+            hit = UnifiedRaycast.GetRaycastHit();
 
-            hits = Physics.RaycastAll(fpsCam.ScreenPointToRay(Input.mousePosition), 1.35f)
-                .Where(go => go.collider.GetComponent<ItemShop>())
-                .ToArray();
-
-
-            if (hits != null) foreach (ItemShop shop in hits.Select(hit => hit.collider.GetComponent<ItemShop>()))
-                {
-                    cartIconShowing = true;
-                    _guiBuy.Value = true;
-                    _guiText.Value = $"{shop.ItemName} {shop.ItemPrice} mk";
-
-                    if (lmb && shop.Stock > 0) shop.Buy();
-                    else if (rmb && shop.Cart > 0) shop.Unbuy();
-
-                    break;
-                }
-
-            else if (cartIconShowing)
+            ItemShop.ShopLookup.TryGetValue(hit.collider, out shop);
+            if (shop != null)
             {
-                cartIconShowing = false;
-                _guiBuy.Value = false;
-                _guiText.Value = "";
+                cartIconShowing = true;
+                _guiBuy.Value = true;
+                _guiText.Value = $"{shop.ItemName} {shop.ItemPrice} mk";
+                if (lmb && shop.Stock > 0) shop.Buy();
+                else if (rmb && shop.Cart > 0) shop.Unbuy();
             }
+        }
+        else if (cartIconShowing)
+        {
+            cartIconShowing = false;
+            _guiBuy.Value = false;
+            _guiText.Value = "";
         }
     }
 }
-
 #endif

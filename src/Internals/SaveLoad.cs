@@ -7,18 +7,13 @@ namespace UniversalShoppingSystem;
 [System.Serializable]
 public class ShopSave
 {
-    public List<bool> ActiveItems { get; private set; }
-    public int Stock { get; private set; }
-    public int ItemsBought { get; private set; }
+    public int Stock;
+    public int ItemsBought;
 
-    public ShopSave()
-    {
-        ActiveItems = new List<bool>();
-    }
+    public ShopSave() { }
 
-    public ShopSave(List<bool> activeItems, int stock, int itemsBought)
+    public ShopSave(int stock, int itemsBought)
     {
-        ActiveItems = activeItems ?? throw new ArgumentNullException(nameof(activeItems));
         Stock = stock;
         ItemsBought = itemsBought;
     }
@@ -26,11 +21,11 @@ public class ShopSave
 
 public class ItemSave
 {
-    public List<Vector3> Position { get; private set; }
-    public List<Vector3> Rotation { get; private set; }
-    public List<bool> InBag { get; private set; }
-    public List<string> BagID { get; private set; }
-    public List<float> Condition { get; private set; }
+    public List<Vector3> Position;
+    public List<Vector3> Rotation;
+    public List<bool> InBag;
+    public List<string> BagID;
+    public List<float> Condition;
 
     public ItemSave()
     {
