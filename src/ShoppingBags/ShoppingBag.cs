@@ -32,7 +32,7 @@ internal class USSBagInventory : MonoBehaviour
                     moditm.BagCountInt = BagContent.IndexOf(moditm.gameObject);
                 }
 
-                else if (!BagContent[i].GetComponent<USSItem>()) ModConsole.LogError("UniversalShoppingSystem: Found no shop system item behaviour on item " + i + "!");
+                else if (!BagContent[i].GetComponent<USSItem>()) ModConsole.LogError("[USS] Found no shop system item behaviour on item " + i + "!");
                 es.shoplist.Clear();
             }
         }

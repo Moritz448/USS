@@ -11,7 +11,7 @@
     <AssemblyName>UniversalShoppingSystem</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-	<LangVersion>10</LangVersion>
+    <LangVersion>13</LangVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -39,15 +39,19 @@
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\0Harmony.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ExpandedShop">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\My Summer Car\Mods\ExpandedShop.dll</HintPath>
+      <HintPath>..\..\..\Downloads\Expanded Shop-3981-1-2-1712855814\ExpandedShop.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="FridgeAPI">
-      <HintPath>.\FridgeAPI.dll</HintPath>
+      <HintPath>..\..\..\Downloads\FridgeAPI-3887-1-0-0-1695399245\FridgeAPI.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -73,7 +77,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\Internals\SaveHandler.cs" />
+    <Compile Include="src\Internals\SaveLoad.cs" />
     <Compile Include="src\ShoppingBags\BagActions.cs" />
     <Compile Include="src\ShoppingBags\BagOpenAction.cs" />
     <Compile Include="src\ModClasses\USSCommands.cs" />
@@ -96,12 +100,12 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if "$(ConfigurationName)" == "Debug" (
-copy "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\My Summer Car\Mods\References" /y
-copy "$(TargetDir)$(TargetName).pdb" "C:\Program Files (x86)\Steam\steamapps\common\My Summer Car\Mods\References" /y
-cd "C:\Program Files (x86)\Steam\steamapps\common\My Summer Car\Mods\References"
-call "C:\Program Files (x86)\Steam\steamapps\common\My Summer Car\Mods\References\debug.bat"
+copy "$(TargetPath)" "C:\Users\Moritz\Documents\MySummerCar\Mods\References" /y
+copy "$(TargetDir)$(TargetName).pdb" "C:\Users\Moritz\Documents\MySummerCar\Mods\References" /y
+cd "C:\Users\Moritz\Documents\MySummerCar\Mods\References"
+call "C:\Users\Moritz\Documents\MySummerCar\Mods\References\debug.bat"
 ) ELSE (
-copy "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\My Summer Car\Mods\References\" /y
+copy "$(TargetPath)" "C:\Users\Moritz\Documents\MySummerCar\Mods\References\" /y
 )</PostBuildEvent>
   </PropertyGroup>
 </Project>

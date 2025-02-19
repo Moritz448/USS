@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using ExpandedShop;
+using System;
 
 
 namespace UniversalShoppingSystem;
@@ -37,8 +38,7 @@ public class ItemShopRaycast : MonoBehaviour
         ConsoleCommand.Add(new USSCommands());
         if (ModLoader.IsModPresent("ExpandedShop")) // Loading up the ES compatibility stuff, including version check
         {
-
-            if (System.Convert.ToDecimal(ModLoader.GetMod("ExpandedShop").Version) < 1.1m)
+            if (new Version(new ExpandedShop.ExpandedShop().Version) < new Version("1.1"))
             {
                 ModUI.ShowCustomMessage("You are using an old version of ExpandedShop which is not compatible with UniversalShoppingSystem. Please update or uninstall ExpandedShop.", "Wrong Version", new MsgBoxBtn[]
                 {
@@ -58,7 +58,7 @@ public class ItemShopRaycast : MonoBehaviour
         List<string> shopIDs = new List<string>();
         foreach (ItemShop shop in Shops)
         {
-            if (shopIDs.Contains(shop.ShopID)) ModConsole.LogError("UniversalShoppingSystem: ShopID " + shop.ShopID + " is not unique!");
+            if (shopIDs.Contains(shop.ShopID)) ModConsole.LogError("[USS] ShopID " + shop.ShopID + " is not unique!");
             else shopIDs.Add(shop.ShopID);
         }
     }

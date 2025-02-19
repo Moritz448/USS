@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System;
+
 
 #if !MINI
 using MSCLoader;
@@ -28,7 +30,6 @@ public class ItemShop : MonoBehaviour
     public GameObject ItemPrefab;
     public bool SpawnInBag;
 
-
 #if !MINI
     // FOLLOWING NOT NEEDED FOR UNITY SETUP; THEREFORE NOT INCLUDED IN MINI DLL
 
@@ -53,39 +54,51 @@ public class ItemShop : MonoBehaviour
     /// Save the shop and all bought items
     /// </summary>
     /// <param name="mod">Mod Class the method is called from</param>
- 
     public void SaveShop(Mod mod)
     {
         // SHOP SAVING
-        List<bool> shopItemsActive = new List<bool>();
-        for (int i = 0; i < transform.childCount; i++) shopItemsActive.Add(transform.GetChild(i).gameObject.activeInHierarchy);
+        try
+        {
+            int childCount = transform.childCount;
+            List<bool> activeItems = new List<bool>(childCount);
 
-        SaveLoad.WriteValue(mod, $"USS_{ShopID}_shopItemsActive", shopItemsActive);
-        SaveLoad.WriteValue(mod, $"USS_{ShopID}_stock", Stock + Cart);
-        SaveLoad.WriteValue(mod, $"USS_{ShopID}_itemsBought", itemsBought);
+            for (int i = 0; i < childCount; i++) activeItems.Add(transform.GetChild(i).gameObject.activeInHierarchy);
+
+            ShopSave saveData = new ShopSave(activeItems, Stock + Cart, itemsBought);
+            SaveLoad.SerializeClass(mod, saveData, $"USS_{ShopID}");
+        }
+        catch (Exception ex) { ModConsole.LogError($"[USS] Failed to save shop: {ex.Message}\n{ex.StackTrace}"); }
 
         // BOUGHT ITEMS SAVING
-        List<Vector3> pos = new List<Vector3>();
-        List<Quaternion> rot = new List<Quaternion>();
-        List<bool> inBag = new List<bool>();
-        List<string> bagID = new List<string>();
-        List<float> condition = new List<float>();
-
-        foreach (GameObject obj in BoughtItems)
+        try
         {
-            USSItem itm = obj.GetComponent<USSItem>();
-            pos.Add(obj.transform.position);
-            rot.Add(obj.transform.rotation);
-            inBag.Add(itm.InBag);
-            bagID.Add(itm.BagID);
-            condition.Add(itm.Condition);
-        }
+            int itemCount = BoughtItems.Count;
 
-        SaveLoad.WriteValue<Vector3>(mod, $"USS_{ShopID}_pos", pos);
-        SaveLoad.WriteValue<Quaternion>(mod, $"USS_{ShopID}_rot", rot);
-        SaveLoad.WriteValue<bool>(mod, $"USS_{ShopID}_inBag", inBag);
-        SaveLoad.WriteValue<string>(mod, $"USS_{ShopID}_bagID", bagID);
-        SaveLoad.WriteValue<float>(mod, $"USS_{ShopID}_condition", condition);
+            List<Vector3> pos = new List<Vector3>(itemCount);
+            List<Vector3> rot = new List<Vector3>(itemCount);
+            List<bool> inBag = new List<bool>(itemCount);
+            List<string> bagID = new List<string>(itemCount);
+            List<float> condition = new List<float>(itemCount);
+
+            foreach (GameObject obj in BoughtItems)
+            {
+                USSItem itm = obj.GetComponent<USSItem>();
+                if (itm != null)
+                {
+                    pos.Add(obj.transform.position);
+                    rot.Add(obj.transform.eulerAngles);
+                    inBag.Add(itm.InBag);
+                    bagID.Add(itm.BagID);
+                    condition.Add(itm.Condition);
+                }
+                else ModConsole.LogWarning($"[USS] Object {obj.name} is missing USSItem component.");
+                
+            }
+
+            ItemSave saveData = new ItemSave(pos, rot, inBag, bagID, condition);
+            SaveLoad.SerializeClass(mod, saveData, $"USS_{ShopID}_items");
+        }
+        catch (Exception ex) { ModConsole.LogError($"[USS] Failed to save {ShopID} items: {ex.Message}\n{ex.StackTrace}"); }
     }
 
     /// <summary>
@@ -94,15 +107,86 @@ public class ItemShop : MonoBehaviour
     /// <param name="mod">Mod class the method is called from</param>
     public void LoadShop(Mod mod)
     {
-        if (SaveLoad.ValueExists(mod, $"USS_{ShopID}_stock"))
+        if (SaveLoad.ValueExists(mod, $"USS_{ShopID}"))
         {
             // SHOP LOADING
+            ShopSave shopData = SaveLoad.DeserializeClass<ShopSave>(mod, $"USS_{ShopID}");
+            if (shopData != null && shopData.ActiveItems != null)
+            {
+                for (int i = 0; i < Mathf.Min(transform.childCount, shopData.ActiveItems.Count); i++) transform.GetChild(i).gameObject.SetActive(shopData.ActiveItems[i]);
+                Stock = shopData.Stock;
+                itemsBought = shopData.ItemsBought;
+            }
+            else ModConsole.LogError($"[USS] Failed to load shop data for {ShopID}: Save data is null or corrupted.");
+
+            // ITEMS LOADING
+            if (SaveLoad.ValueExists(mod, $"USS_{ShopID}_items"))
+            {
+                ItemSave itemData = SaveLoad.DeserializeClass<ItemSave>(mod, $"USS_{ShopID}_items");
+                List<GameObject> shoppingBags = (from gameObject in UnityEngine.Resources.FindObjectsOfTypeAll<GameObject>()
+                                                 where gameObject.name.Contains("shopping bag") && gameObject.GetComponent<PlayMakerFSM>() != null
+                                                 select gameObject).ToList();
+
+                int itemCount = itemData.Position.Count;
+                if (itemData.Rotation.Count != itemCount || itemData.InBag.Count != itemCount || itemData.BagID.Count != itemCount || itemData.Condition.Count != itemCount)
+                {
+                    ModConsole.LogError($"[USS] Item save data mismatch for {ShopID}. Skipping item loading.");
+                    return;
+                }
+
+                for (int i = 0; i < itemCount; i++)
+                {
+                    GameObject obj = GameObject.Instantiate(ItemPrefab);
+                    USSItem itm = obj.GetComponent<USSItem>();
+
+                    obj.transform.position = itemData.Position[i];
+                    obj.transform.eulerAngles = itemData.Rotation[i];
+
+                    itm.InBag = itemData.InBag[i];
+                    itm.BagID = itemData.BagID[i];
+                    itm.Condition = itemData.Condition[i];
+
+                    obj.SetActive(false);
+
+                    if (itm.InBag)
+                    {
+                        GameObject bag = FindBagByID(shoppingBags, itm.BagID);
+                        if (bag == null)
+                        {
+                            ModConsole.Log("[USS]: Couldn't find bag; Spawning item outside.");
+                            obj.SetActive(true);
+                            itm.StartSpoiling();
+                            continue;
+                        }
+
+                        AddItemToBag(bag, obj);
+                    }
+                    else
+                    {
+                        obj.SetActive(true);
+                        itm.StartSpoiling();
+                    }
+
+                    BoughtItems.Add(obj); // Keep the item tracked for next save
+                }
+            }
+        }
+        // BACKWARDS COMPATIBILITY FOR PRE-
+        else if (SaveLoad.ValueExists(mod, $"USS_{ShopID}_stock"))
+        {
+            ModConsole.Log($"[USS] Found old save data for shop {ShopID}; Loading with fallback.");
+
+            // SHOP LOADING
             List<bool> shopItemsActive = SaveLoad.ReadValueAsList<bool>(mod, $"USS_{ShopID}_shopItemsActive");
-            for (int i = 0; i < transform.childCount; i++) transform.GetChild(i).gameObject.SetActive(shopItemsActive[i]);
+
+            if (shopItemsActive == null || shopItemsActive.Count == 0) ModConsole.Log($"[USS] No saved active shop items found for {ShopID}. Defaulting all to active.");
+
+            for (int i = 0; i < Mathf.Min(transform.childCount, shopItemsActive.Count); i++) transform.GetChild(i).gameObject.SetActive(shopItemsActive[i]);
+
+            for (int i = shopItemsActive.Count; i < transform.childCount; i++) transform.GetChild(i).gameObject.SetActive(true); // Default any extra children to active if save data is incomplete
 
             Stock = SaveLoad.ReadValue<int>(mod, $"USS_{ShopID}_stock");
             itemsBought = SaveLoad.ReadValue<int>(mod, $"USS_{ShopID}_itemsBought");
-
 
             // BOUGHT ITEMS LOADING
             List<Vector3> pos = SaveLoad.ReadValueAsList<Vector3>(mod, $"USS_{ShopID}_pos");
@@ -115,6 +199,12 @@ public class ItemShop : MonoBehaviour
                                              where gameObject.name.Contains("shopping bag") && gameObject.GetComponent<PlayMakerFSM>() != null
                                              select gameObject).ToList();
 
+            if (rot.Count != pos.Count || inBag.Count != pos.Count || bagID.Count != pos.Count || condition.Count != pos.Count)
+            {
+                ModConsole.LogError($"[USS] Item save data mismatch for {ShopID}. Skipping item loading.");
+                return;
+            }
+
             for (int i = 0; i < pos.Count; i++)
             {
                 GameObject obj = GameObject.Instantiate(ItemPrefab);
@@ -122,6 +212,7 @@ public class ItemShop : MonoBehaviour
 
                 obj.transform.position = pos[i];
                 obj.transform.rotation = rot[i];
+
                 itm.InBag = inBag[i];
                 itm.BagID = bagID[i];
                 itm.Condition = condition[i];
@@ -130,27 +221,17 @@ public class ItemShop : MonoBehaviour
 
                 if (itm.InBag)
                 {
-                    GameObject bag = shoppingBags.FirstOrDefault((GameObject select) => select.GetComponent<PlayMakerFSM>().FsmVariables.FindFsmString("ID").Value == itm.BagID);
+                    GameObject bag = FindBagByID(shoppingBags, itm.BagID);
+
                     if (bag == null)
                     {
-                        ModConsole.LogWarning("UniversalShoppingSystem: Couldnt find bag; Spawning item outside.");
+                        ModConsole.LogWarning("[USS] Couldn't find bag; Spawning item outside.");
                         obj.SetActive(true);
                         itm.StartSpoiling();
                         continue;
                     }
-
-                    USSBagInventory bagBagInventory = bag.GetComponent<USSBagInventory>();
-                    if (bagBagInventory == null)
-                    {
-                        bagBagInventory = bag.AddComponent<USSBagInventory>();
-                        bagBagInventory.BagContent = new List<GameObject> { obj };
-                        USSBagSetupOpenAction act = bag.AddComponent<USSBagSetupOpenAction>();
-                        act.Bag = bag;
-                        act.BagInventory = bagBagInventory;
-                    }
-                    else bagBagInventory.BagContent.Add(obj);
+                    AddItemToBag(bag, obj);
                 }
-
                 else
                 {
                     obj.SetActive(true);
@@ -159,6 +240,32 @@ public class ItemShop : MonoBehaviour
                 BoughtItems.Add(obj); // Keep the item tracked for next save
             }
         }
+    }
+
+    private GameObject FindBagByID(List<GameObject> bags, string bagID)
+    {
+        return bags.FirstOrDefault(bag =>
+        {
+            PlayMakerFSM fsm = bag.GetComponent<PlayMakerFSM>();
+            return fsm != null && fsm.FsmVariables.FindFsmString("ID").Value == bagID;
+        });
+    }
+
+    private void AddItemToBag(GameObject bag, GameObject obj)
+    {
+        USSBagInventory bagInventory = bag.GetComponent<USSBagInventory>();
+
+        if (bagInventory == null)
+        {
+            bagInventory = bag.AddComponent<USSBagInventory>();
+            bagInventory.BagContent = new List<GameObject> { obj };
+
+            USSBagSetupOpenAction act = bag.AddComponent<USSBagSetupOpenAction>();
+            act.Bag = bag;
+            act.BagInventory = bagInventory;
+        }
+        else bagInventory.BagContent.Add(obj);
+        
     }
 
     private class CreateBagAction : FsmStateAction
@@ -185,7 +292,37 @@ public class ItemShop : MonoBehaviour
 
     private void Start()
     {
-        if (ShopID == "Unique ID for Save/Load management") ModConsole.Error("UniversalShoppingSystem: ShopID of " + ItemName + " is still default!");
+        if (ShopID == "Unique ID for Save/Load management") ModConsole.Error("[USS]: ShopID of " + ItemName + " is still default!");
+
+        /*GameObject player = GameObject.Find("PLAYER");
+        ItemShopRaycast itemShopRaycast = player.GetComponent<ItemShopRaycast>() ?? player.AddComponent<ItemShopRaycast>();
+        itemShopRaycast.Shops.Add(this); // Register shop for commands, unique id check etc.
+
+        GameObject store = GameObject.Find("STORE");
+        Transform storeCashRegister = store.transform.Find("StoreCashRegister");
+
+        vanillaShopInventory = store.transform.Find("Inventory").gameObject;
+
+        register = storeCashRegister.GetComponent<PlayMakerFSM>();
+        registerData = store.transform.Find("StoreCashRegister").transform.GetChild(2).GetPlayMaker("Data");
+        registerData.InitializeFSM();
+
+        // Hook into FSM states
+        GameHook.InjectStateHook(register.gameObject, "Purchase", Pay);
+        vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this });
+
+        transform.SetParent(store.transform.Find("LOD/StoreInside"), false);
+        transform.localEulerAngles = TriggerRotation;
+        transform.localPosition = TriggerPosition;
+        transform.SetParent(null, true); // Needs to be parented to root in order to stay active for restocking
+
+        // Initialize shop data
+        Stock = transform.childCount;
+        Cart = itemsBought = 0;
+        Restock(); // Fully restock, save data overrides the values
+
+        if (SpawnInBag) SetupBagSpawning(store);*/
+
 
         if (!GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>()) GameObject.Find("PLAYER").AddComponent<ItemShopRaycast>();
         GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>().Shops.Add(this); // Add shop for commands, unique id check etc.
@@ -226,18 +363,36 @@ public class ItemShop : MonoBehaviour
             });
         }
     }
-    
+
+    private void SetupBagSpawning(GameObject store)
+    {
+        // Bag Spawning Setup
+        PlayMakerFSM bagCreator = store.transform.Find("LOD/ShopFunctions/BagCreator").GetPlayMaker("Create");
+        bagCreator.InitializeFSM();
+        bagCreator.GetState("Copy contents").InsertAction(0, new USSBagSetupAction
+        {
+            Bag = (bagCreator.GetState("Copy contents").Actions.First(action => action is ArrayListCopyTo) as ArrayListCopyTo).gameObjectTarget.GameObject,
+            Shop = this
+        });
+        // Abusing the oil filter shop for our purposes
+        registerData.GetState("Oil filter").InsertAction(0, new CreateBagAction
+        {
+            Shop = this,
+            Check = registerData.FsmVariables.FindFsmInt("QOilfilter")
+        });
+    }
+
     private void Restock()
     {
         StartCoroutine(RestockShop());
         itemsBought = 0;
-        Stock = this.gameObject.transform.childCount;
+        Stock = transform.childCount;
         OnRestock?.Invoke(); // Run user-provided actions
     }
 
     private IEnumerator RestockShop()
     {
-        for (int i = 0; i < this.gameObject.transform.childCount; i++) this.transform.GetChild(i).gameObject.SetActive(true); 
+        for (int i = 0; i < transform.childCount; i++) transform.GetChild(i).gameObject.SetActive(true); 
         yield break;
     }
 
@@ -313,5 +468,4 @@ public class ItemShop : MonoBehaviour
         }
     }
 #endif
-
 }
