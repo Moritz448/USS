@@ -49,11 +49,6 @@ public class ItemShopRaycast : MonoBehaviour
             else StartCoroutine(ToggleESBool());
         }
 
-        fpsCam = GameObject.Find("PLAYER").transform.Find("Pivot/AnimPivot/Camera/FPSCamera/FPSCamera").GetComponent<Camera>();
-        _guiBuy = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy");
-        _guiText = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
-        storeOpen = GameObject.Find("STORE").GetPlayMaker("OpeningHours").FsmVariables.FindFsmBool("OpenStore");
-
         // Check for duplicate Shop IDs, which would cause the save/load system to malfunction
         List<string> shopIDs = new List<string>();
         foreach (ItemShop shop in Shops)
@@ -61,6 +56,15 @@ public class ItemShopRaycast : MonoBehaviour
             if (shopIDs.Contains(shop.ShopID)) ModConsole.LogError("[USS] ShopID " + shop.ShopID + " is not unique!");
             else shopIDs.Add(shop.ShopID);
         }
+    }
+
+    private void Awake()
+    {
+        fpsCam = GameObject.Find("PLAYER").transform.Find("Pivot/AnimPivot/Camera/FPSCamera/FPSCamera").GetComponent<Camera>();
+        _guiBuy = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy");
+        _guiText = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
+        storeOpen = GameObject.Find("STORE").GetPlayMaker("OpeningHours").FsmVariables.FindFsmBool("OpenStore");
+
     }
 
     private void Update()

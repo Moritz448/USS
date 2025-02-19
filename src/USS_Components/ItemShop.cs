@@ -294,46 +294,20 @@ public class ItemShop : MonoBehaviour
     {
         if (ShopID == "Unique ID for Save/Load management") ModConsole.Error("[USS]: ShopID of " + ItemName + " is still default!");
 
-        /*GameObject player = GameObject.Find("PLAYER");
+        GameObject player = GameObject.Find("PLAYER");
         ItemShopRaycast itemShopRaycast = player.GetComponent<ItemShopRaycast>() ?? player.AddComponent<ItemShopRaycast>();
         itemShopRaycast.Shops.Add(this); // Register shop for commands, unique id check etc.
 
         GameObject store = GameObject.Find("STORE");
-        Transform storeCashRegister = store.transform.Find("StoreCashRegister");
 
-        vanillaShopInventory = store.transform.Find("Inventory").gameObject;
-
-        register = storeCashRegister.GetComponent<PlayMakerFSM>();
-        registerData = store.transform.Find("StoreCashRegister").transform.GetChild(2).GetPlayMaker("Data");
-        registerData.InitializeFSM();
-
-        // Hook into FSM states
-        GameHook.InjectStateHook(register.gameObject, "Purchase", Pay);
-        vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this });
-
-        transform.SetParent(store.transform.Find("LOD/StoreInside"), false);
-        transform.localEulerAngles = TriggerRotation;
-        transform.localPosition = TriggerPosition;
-        transform.SetParent(null, true); // Needs to be parented to root in order to stay active for restocking
-
-        // Initialize shop data
-        Stock = transform.childCount;
-        Cart = itemsBought = 0;
-        Restock(); // Fully restock, save data overrides the values
-
-        if (SpawnInBag) SetupBagSpawning(store);*/
-
-
-        if (!GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>()) GameObject.Find("PLAYER").AddComponent<ItemShopRaycast>();
-        GameObject.Find("PLAYER").GetComponent<ItemShopRaycast>().Shops.Add(this); // Add shop for commands, unique id check etc.
-
-        register = GameObject.Find("STORE/StoreCashRegister/Register").GetComponent<PlayMakerFSM>();
-        vanillaShopInventory = GameObject.Find("STORE/Inventory");
+        register = store.transform.Find("StoreCashRegister/Register").GetComponent<PlayMakerFSM>();
         registerData = GameObject.Find("StoreCashRegister").transform.GetChild(2).GetPlayMaker("Data");
         registerData.InitializeFSM();
+        vanillaShopInventory = store.transform.Find("Inventory").gameObject;
 
         GameHook.InjectStateHook(register.gameObject, "Purchase", () => { Pay(); });
         vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this }); // Inject paying and restock mechanics
+
 
         transform.SetParent(GameObject.Find("STORE").transform.Find("LOD").transform.Find("GFX_Store").transform.Find("store_inside"), false);
         transform.localEulerAngles = TriggerRotation;
@@ -344,24 +318,7 @@ public class ItemShop : MonoBehaviour
         Cart = itemsBought = 0;
         Restock(); // Fully restock, save data overrides the values
 
-        if (SpawnInBag) // Only setup the whole stuff when items should spawn in bags
-        {
-            // Bag Spawning Setup
-            GameObject store = GameObject.Find("STORE");
-            PlayMakerFSM fsm = store.transform.Find("LOD/ShopFunctions/BagCreator").GetPlayMaker("Create");
-            fsm.InitializeFSM();
-            fsm.GetState("Copy contents").InsertAction(0, new USSBagSetupAction
-            {
-                Bag = (fsm.GetState("Copy contents").Actions.First(action => action is ArrayListCopyTo) as ArrayListCopyTo).gameObjectTarget.GameObject,
-                Shop = this
-            });
-            // Abusing the oil filter shop for our purposes
-            registerData.GetState("Oil filter").InsertAction(0, new CreateBagAction
-            {
-                Shop = this,
-                Check = registerData.FsmVariables.FindFsmInt("QOilfilter")
-            });
-        }
+        if (SpawnInBag) SetupBagSpawning(store); // Only setup the whole stuff when items should spawn in bags     
     }
 
     private void SetupBagSpawning(GameObject store)
