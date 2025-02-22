@@ -1,5 +1,4 @@
 ﻿#if !MINI
-
 using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
@@ -13,24 +12,30 @@ internal class USSBagSetupAction : FsmStateAction
     public ItemShop Shop;
     public override void OnEnter()
     {
-        USSBagInventory BagInventory = Bag.Value.GetComponent<USSBagInventory>();
-        if (BagInventory == null)
+        if (Bag?.Value == null || Shop == null)
         {
-            BagInventory = Bag.Value.AddComponent<USSBagInventory>();
-            if (Shop.SpawnInBag) Shop.SpawnBag(BagInventory);
+            Finish();
+            return;
+        }
 
+        USSBagInventory BagInventory = Bag.Value.GetComponent<USSBagInventory>()
+                                   ?? Bag.Value.AddComponent<USSBagInventory>();
+
+        if (Shop.SpawnInBag) Shop.SpawnBag(BagInventory);
+
+        if (!Bag.Value.GetComponent<USSBagSetupOpenAction>())
+        {
             USSBagSetupOpenAction act = Bag.Value.AddComponent<USSBagSetupOpenAction>();
             act.Bag = Bag.Value;
             act.BagInventory = BagInventory;
         }
-        else if (Shop.SpawnInBag) Shop.SpawnBag(BagInventory);
-            
+
         Finish();
     }
 }
 internal class USSBagSetupOpenAction : MonoBehaviour
 {
-    PlayMakerFSM use;
+    private PlayMakerFSM use;
     public USSBagInventory BagInventory;
     public GameObject Bag;
 
