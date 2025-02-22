@@ -304,11 +304,9 @@ public class ItemShop : MonoBehaviour
         GameHook.InjectStateHook(register.gameObject, "Purchase", () => { Pay(); });
         vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this }); // Inject paying and restock mechanics
 
-
         transform.SetParent(store.transform.Find("LOD").transform.Find("GFX_Store").transform.Find("store_inside"), false);
         transform.localEulerAngles = TriggerRotation;
         transform.localPosition = TriggerPosition;
-        transform.SetParent(null, true); // Needs to be parented to root in order to stay active all the time to not cause problems with restocking
 
         Stock = transform.childCount;
         Cart = itemsBought = 0;

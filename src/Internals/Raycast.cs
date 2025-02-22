@@ -39,7 +39,6 @@ public class ItemShopRaycast : MonoBehaviour
 
     private void Start()
     {
-        ConsoleCommand.Add(new USSCommands());
         if (ModLoader.IsModPresent("ExpandedShop")) // Loading up the ES compatibility stuff, including version check
         {
             if (new Version(new ExpandedShop.ExpandedShop().Version) < new Version("1.1"))

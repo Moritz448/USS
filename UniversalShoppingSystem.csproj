@@ -80,12 +80,11 @@
     <Compile Include="src\Internals\SaveLoad.cs" />
     <Compile Include="src\ShoppingBags\BagActions.cs" />
     <Compile Include="src\ShoppingBags\BagOpenAction.cs" />
-    <Compile Include="src\ModClasses\USSCommands.cs" />
     <Compile Include="src\Internals\GameHook.cs" />
     <Compile Include="src\USS_Components\ItemShop.cs" />
     <Compile Include="src\Internals\Raycast.cs" />
     <Compile Include="src\ShoppingBags\ShoppingBag.cs" />
-    <Compile Include="src\ModClasses\UniversalShoppingSystem.cs" />
+    <Compile Include="src\ModStuff\UniversalShoppingSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\USS_Components\USS_Item.cs" />
   </ItemGroup>
