@@ -1,5 +1,4 @@
 ﻿#if !MINI
-
 using MSCLoader;
 
 namespace UniversalShoppingSystem;
@@ -17,5 +16,4 @@ public class UniversalShoppingSystem : Mod
     private void Mod_OnMenuLoad() => ModUI.ShowCustomMessage("USS is not a mod. Move it to the References folder.",
         "READ ME", new MsgBoxBtn[] { ModUI.CreateMessageBoxBtn("I will", () => { }, false) });  
 }
-
 #endif
