@@ -14,9 +14,6 @@ internal class USSBagOpenAction : FsmStateAction
     public PlayMakerArrayListProxy[] Arrays;
 
     private static readonly bool ESPresent = ModLoader.IsModPresent("ExpandedShop");
-    private static FsmString _guiText;
-
-    public override void Awake() => _guiText ??= FsmVariables.GlobalVariables.FindFsmString("GUIinteraction");
 
     private bool CheckForModItem(Transform item) { return item.GetComponent<ModItem>(); }
     private void TakeModItemOut(Transform item) // For Expanded Shop
@@ -44,8 +41,6 @@ internal class USSBagOpenAction : FsmStateAction
 
         BagInventory.BagContent.Remove(itm.gameObject);
         if (CheckVanillaEmpty()) MasterAudio.PlaySound3DAndForget("HouseFoley", BagInventory.transform, false, 1f, 1f, 0f, "plasticbag_open2");
-
-        _guiText.Value = string.Empty;
 
         if (BagInventory.BagContent.Count == 0)
         {
@@ -83,7 +78,6 @@ internal class USSBagOpenAction : FsmStateAction
             }
 
             BagInventory.BagContent.Clear();
-            _guiText.Value = string.Empty;
 
             if (CheckVanillaEmpty())
             {
