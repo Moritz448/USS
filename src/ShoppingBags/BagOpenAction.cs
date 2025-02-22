@@ -1,5 +1,4 @@
 ﻿#if !MINI
-
 using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
@@ -13,6 +12,12 @@ internal class USSBagOpenAction : FsmStateAction
     public USSBagInventory BagInventory;
     public bool OpenAll = false;
     public PlayMakerArrayListProxy[] Arrays;
+
+    private static readonly bool ESPresent = ModLoader.IsModPresent("ExpandedShop");
+    private static FsmString _guiText;
+
+    public override void Awake() => _guiText ??= FsmVariables.GlobalVariables.FindFsmString("GUIinteraction");
+
     private bool CheckForModItem(Transform item) { return item.GetComponent<ModItem>(); }
     private void TakeModItemOut(Transform item) // For Expanded Shop
     {
@@ -28,19 +33,19 @@ internal class USSBagOpenAction : FsmStateAction
         itm.eulerAngles = Vector3.zero;
         itm.gameObject.SetActive(true);
 
-        if (itm.GetComponent<USSItem>()) // If its an USS item...
+        USSItem ussitm;
+        if (ussitm = itm.GetComponent<USSItem>()) // If its an USS item...
         {
-            USSItem ussitm = itm.GetComponent<USSItem>();
             ussitm.InBag = false;
             ussitm.Condition = Fsm.Variables.FindFsmFloat("Condition").Value;
             ussitm.StartSpoiling();
         }
-        else if (ModLoader.IsModPresent("ExpandedShop") && CheckForModItem(itm)) TakeModItemOut(itm); // else it has to be an expanded shop item.
+        else if (ESPresent && CheckForModItem(itm)) TakeModItemOut(itm); // else it has to be an expanded shop item.
 
         BagInventory.BagContent.Remove(itm.gameObject);
         if (CheckVanillaEmpty()) MasterAudio.PlaySound3DAndForget("HouseFoley", BagInventory.transform, false, 1f, 1f, 0f, "plasticbag_open2");
 
-        FsmVariables.GlobalVariables.FindFsmString("GUIinteraction").Value = "";
+        _guiText.Value = string.Empty;
 
         if (BagInventory.BagContent.Count == 0)
         {
@@ -49,11 +54,15 @@ internal class USSBagOpenAction : FsmStateAction
         }            
         
         Fsm.Event("FINISHED");
-
     }
+
     public override void OnEnter()
     {
-        if (!OpenAll && BagInventory.BagContent.Count > 0) TakeOutItem();
+        if (!OpenAll && BagInventory.BagContent.Count > 0)
+        {
+            TakeOutItem();
+            return;
+        }
         
         if (OpenAll)
         {
@@ -70,11 +79,12 @@ internal class USSBagOpenAction : FsmStateAction
                     ussitm.Condition = Fsm.Variables.FindFsmFloat("Condition").Value;
                     ussitm.StartSpoiling();
                 }
-                else if (ModLoader.IsModPresent("ExpandedShop")) TakeModItemOut(BagInventory.BagContent[i].transform); // Else it has to be an expanded shop item.
+                else if (ESPresent) TakeModItemOut(BagInventory.BagContent[i].transform); // Else it has to be an expanded shop item.
             }
 
             BagInventory.BagContent.Clear();
-            FsmVariables.GlobalVariables.FindFsmString("GUIinteraction").Value = "";
+            _guiText.Value = string.Empty;
+
             if (CheckVanillaEmpty())
             {
                 Fsm.Event("GARBAGE");
@@ -88,18 +98,9 @@ internal class USSBagOpenAction : FsmStateAction
         int num = 0;
         PlayMakerArrayListProxy[] array = Arrays;
 
-        for (int i = 0; i < array.Length; i++)
-        {
-            foreach (int array2 in array[i].arrayList)
-            {
-                if (array2 > num)
-                {
-                    num = array2;
-                }
-            }
-        }
+        for (int i = 0; i < array.Length; i++) foreach (int array2 in array[i].arrayList) if (array2 > num) num = array2; 
+        
         return num == 0;
     }
 }
-
 #endif
