@@ -29,11 +29,11 @@ public class ItemSave
 
     public ItemSave()
     {
-        Position = new List<Vector3>();
-        Rotation = new List<Vector3>();
-        InBag = new List<bool>();
-        BagID = new List<string>();
-        Condition = new List<float>();
+        Position = [];
+        Rotation = [];
+        InBag = [];
+        BagID = [];
+        Condition = [];
     }
 
     public ItemSave(List<Vector3> position, List<Vector3> rotation, List<bool> inBag, List<string> bagID, List<float> condition)
