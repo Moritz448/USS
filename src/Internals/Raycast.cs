@@ -9,18 +9,14 @@ using System.Collections.Generic;
 using ExpandedShop;
 using System;
 
-
 namespace UniversalShoppingSystem;
 
 public class ItemShopRaycast : MonoBehaviour
 {
-    public List<ItemShop> Shops = new List<ItemShop>();
+    public List<ItemShop> Shops = [];
 
-    private Camera fpsCam;
-
-    private FsmBool _guiBuy;
-    private FsmString _guiText;
-    private FsmBool storeOpen;
+    private static FsmBool _guiBuy, storeOpen;
+    private static FsmString _guiText;
 
     private bool cartIconShowing;
 
@@ -28,9 +24,17 @@ public class ItemShopRaycast : MonoBehaviour
 
     private IEnumerator ToggleESBool() // Due to load order depending on the dll names (alphabetical order), the script needs to wait until ExpandedShop instantiated its components
     {
-        while (GameObject.Find("STORE/TeimoDrinksMod(Clone)") == null) yield return new WaitForSeconds(0.3f);
-        GameObject.Find("STORE/TeimoDrinksMod(Clone)").GetComponent<ShopRaycast>().ApplyFsmBool = false;
+        GameObject es;
+        while ((es = GameObject.Find("STORE/TeimoDrinksMod(Clone)")) == null) yield return new WaitForSeconds(1f);
+        es.GetComponent<ShopRaycast>().ApplyFsmBool = false;
         yield break;
+    }
+
+    private void Awake()
+    {
+        _guiBuy ??= PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy");
+        _guiText ??= PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
+        storeOpen ??= GameObject.Find("STORE").GetPlayMaker("OpeningHours").FsmVariables.FindFsmBool("OpenStore");
     }
 
     private void Start()
@@ -50,41 +54,24 @@ public class ItemShopRaycast : MonoBehaviour
         }
 
         // Check for duplicate Shop IDs, which would cause the save/load system to malfunction
-        List<string> shopIDs = new List<string>();
-        foreach (ItemShop shop in Shops)
-        {
-            if (shopIDs.Contains(shop.ShopID)) ModConsole.LogError("[USS] ShopID " + shop.ShopID + " is not unique!");
-            else shopIDs.Add(shop.ShopID);
-        }
-    }
-
-    private void Awake()
-    {
-        fpsCam = GameObject.Find("PLAYER").transform.Find("Pivot/AnimPivot/Camera/FPSCamera/FPSCamera").GetComponent<Camera>();
-        _guiBuy = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy");
-        _guiText = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
-        storeOpen = GameObject.Find("STORE").GetPlayMaker("OpeningHours").FsmVariables.FindFsmBool("OpenStore");
-
+        HashSet<string> shopIDs = [];
+        foreach (ItemShop shop in Shops) if (!shopIDs.Add(shop.ShopID)) ModConsole.LogError($"[USS] ShopID {shop.ShopID} is not unique!");
     }
 
     private void Update()
     {
         if (!storeOpen.Value) return;
 
-        bool lmb = Input.GetKeyDown(KeyCode.Mouse0);
-        bool rmb = Input.GetKeyDown(KeyCode.Mouse1);
+        bool lmb = Input.GetMouseButtonDown(0);
+        bool rmb = Input.GetMouseButtonDown(1);
 
-        ItemShop shop = null;
-
-        if (UnifiedRaycast.GetHitName() != String.Empty)
+        if (!string.IsNullOrEmpty(UnifiedRaycast.GetHitName()))
         {
             hit = UnifiedRaycast.GetRaycastHit();
 
-            ItemShop.ShopLookup.TryGetValue(hit.collider, out shop);
-            if (shop != null)
+            if (ItemShop.ShopLookup.TryGetValue(hit.collider, out ItemShop shop))
             {
-                cartIconShowing = true;
-                _guiBuy.Value = true;
+                cartIconShowing = _guiBuy.Value = true;
                 _guiText.Value = $"{shop.ItemName} {shop.ItemPrice} mk";
                 if (lmb && shop.Stock > 0) shop.Buy();
                 else if (rmb && shop.Cart > 0) shop.Unbuy();
@@ -92,9 +79,8 @@ public class ItemShopRaycast : MonoBehaviour
         }
         else if (cartIconShowing)
         {
-            cartIconShowing = false;
-            _guiBuy.Value = false;
-            _guiText.Value = "";
+            cartIconShowing = _guiBuy.Value = false;
+            _guiText.Value = String.Empty;
         }
     }
 }
