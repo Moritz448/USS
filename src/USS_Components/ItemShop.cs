@@ -164,7 +164,7 @@ public class ItemShop : MonoBehaviour
                 }
             }
         }
-        // BACKWARDS COMPATIBILITY FOR PRE-
+        // BACKWARDS COMPATIBILITY FOR PRE-1.0.6
         else if (SaveLoad.ValueExists(mod, $"USS_{ShopID}_stock")) LegacyLoad(mod);
     }
 

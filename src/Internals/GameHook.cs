@@ -1,5 +1,4 @@
 ﻿#if !MINI
-
 /*MIT License
 
 Copyright(c) 2017 Honeycomb936
@@ -66,5 +65,4 @@ public class GameHook
         return null;
     }
 }
-
 #endif
