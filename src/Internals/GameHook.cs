@@ -1,8 +1,7 @@
 ﻿#if !MINI
-
 /*MIT License
 
-Copyright(c) 2017 zamp
+Copyright(c) 2017 Honeycomb936
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -45,29 +44,25 @@ public class GameHook
 
     public static void InjectStateHook(GameObject gameObject, string stateName, Action hook)
     {
-        var state = GetStateFromGameObject(gameObject, stateName);
-        if (state != null)
+        FsmState state;
+        if ((state = GetStateFromGameObject(gameObject, stateName)) != null)
         {
-            // inject our hook action to the state machine
-            var actions = new List<FsmStateAction>(state.Actions);
-            var hookAction = new FsmHookAction();
-            hookAction.hook = hook;
+            List<FsmStateAction> actions = [.. state.Actions];
+            FsmHookAction hookAction = new() { hook = hook };
             actions.Insert(0, hookAction);
-            state.Actions = actions.ToArray();
+            state.Actions = [.. actions];
         }
     }
 
     private static FsmState GetStateFromGameObject(GameObject obj, string stateName)
     {
-        var comps = obj.GetComponents<PlayMakerFSM>();
-        foreach (var playMakerFsm in comps)
+        PlayMakerFSM[] comps = obj.GetComponents<PlayMakerFSM>();
+        foreach (PlayMakerFSM playMakerFsm in comps)
         {
-            var state = playMakerFsm.FsmStates.FirstOrDefault(x => x.Name == stateName);
-            if (state != null)
-                return state;
+            FsmState state = playMakerFsm.FsmStates.FirstOrDefault(x => x.Name == stateName);
+            if (state != null) return state;
         }
         return null;
     }
 }
-
 #endif

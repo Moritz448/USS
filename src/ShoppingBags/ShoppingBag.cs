@@ -1,5 +1,4 @@
 ﻿#if !MINI
-
 using UnityEngine;
 using MSCLoader;
 using System.Collections;
@@ -11,7 +10,9 @@ namespace UniversalShoppingSystem;
 
 internal class USSBagInventory : MonoBehaviour
 {
-    public List<GameObject> BagContent = new List<GameObject>();
+    public List<GameObject> BagContent = [];
+    
+    private static readonly bool ESPresent = ModLoader.IsModPresent("ExpandedShop");
 
     private void Start() => StartCoroutine(InitiateBag());
 
@@ -19,7 +20,7 @@ internal class USSBagInventory : MonoBehaviour
     {
         ModShopBagInv es = this.gameObject.GetComponent<ModShopBagInv>();
 
-        if (es !=null && es.shoplist.Count > 0)
+        if (es != null && es.shoplist.Count > 0)
         {
             this.BagContent.AddRange(es.shoplist);
 
@@ -29,10 +30,10 @@ internal class USSBagInventory : MonoBehaviour
                 if (moditm != null)
                 {
                     moditm.BagID = gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value;
-                    moditm.BagCountInt = BagContent.IndexOf(moditm.gameObject);
+                    moditm.BagCountInt = i;
                 }
 
-                else if (!BagContent[i].GetComponent<USSItem>()) ModConsole.LogError("UniversalShoppingSystem: Found no shop system item behaviour on item " + i + "!");
+                else if (!BagContent[i].GetComponent<USSItem>()) ModConsole.LogError($"[USS] Found no shop system item behaviour on item {i}!");
                 es.shoplist.Clear();
             }
         }
@@ -46,12 +47,11 @@ internal class USSBagInventory : MonoBehaviour
         for (int i = 0; i < this.BagContent.Count; i++) if (BagContent[i].GetComponent<USSItem>()) BagContent[i].GetComponent<USSItem>().BagID = this.gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value;
 
         // Take over all ExpandedShop items if ES is loaded
-        if (ModLoader.IsModPresent("ExpandedShop")) TakeESOver(); 
-        
-        if (BagContent.Count == 0) Destroy(this); 
+        if (ESPresent) TakeESOver();
+
+        if (BagContent.Count == 0) Destroy(this);
 
         yield break;
     }
 }
-
 #endif

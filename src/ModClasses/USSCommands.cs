@@ -1,5 +1,4 @@
 ﻿#if !MINI
-
 using MSCLoader;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,7 +7,7 @@ namespace UniversalShoppingSystem;
 
 public class USSCommands : ConsoleCommand
 {
-    List<GameObject> shopGameObjects = new List<GameObject>();
+    private readonly List<GameObject> shopGameObjects = [];
 
     public override string Name => "uss";
     public override string Help => "'uss list': Returns a list of all loaded USS shops with their index required for uss move\n'uss move [index]': Parents a USS shop specified to store_inside to make positioning via Developer Toolset easier. When finished, copy the transform values with devtoolset and enter them in the unity component.";
@@ -23,7 +22,7 @@ public class USSCommands : ConsoleCommand
                 for (int i = 0; i < shops.Count; i++)
                 {
                     shopGameObjects.Add(shops[i].gameObject);
-                    ModConsole.Log(i + ": " + shops[i].gameObject.name);
+                    ModConsole.Log($"{i} : {shops[i].gameObject.name}");
                 }                    
                 break;
 
@@ -43,5 +42,4 @@ public class USSCommands : ConsoleCommand
         }
     }
 }
-
 #endif
