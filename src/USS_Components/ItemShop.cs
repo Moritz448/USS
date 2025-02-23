@@ -286,7 +286,7 @@ public class ItemShop : MonoBehaviour
 
     private void Start()
     {
-        if (ShopID == "Unique ID for Save/Load management") ModConsole.Error("[USS]: ShopID of " + ItemName + " is still default!");
+        if (ShopID == "Unique ID for Save/Load management") ModConsole.Error($"[USS]: ShopID of {ItemName} is still default!");
 
         if (!ShopLookup.ContainsKey(GetComponent<Collider>())) ShopLookup[GetComponent<Collider>()] = this;
 
