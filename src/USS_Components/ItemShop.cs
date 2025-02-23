@@ -301,7 +301,7 @@ public class ItemShop : MonoBehaviour
         registerData.InitializeFSM();
         vanillaShopInventory = store.transform.Find("Inventory").gameObject;
 
-        GameHook.InjectStateHook(register.gameObject, "Purchase", () => { Pay(); });
+        register.FsmInject("Purchase", Pay);
         vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this }); // Inject paying and restock mechanics
 
         transform.SetParent(store.transform.Find("LOD").transform.Find("GFX_Store").transform.Find("store_inside"), false);
