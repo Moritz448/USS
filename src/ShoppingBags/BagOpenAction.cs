@@ -2,8 +2,7 @@
 using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
-
-using ExpandedShop;
+using System;
 
 namespace UniversalShoppingSystem;
 
@@ -15,12 +14,17 @@ internal class USSBagOpenAction : FsmStateAction
 
     private static readonly bool ESPresent = ModLoader.IsModPresent("ExpandedShop");
 
-    private bool CheckForModItem(Transform item) { return item.GetComponent<ModItem>(); }
+    private static readonly Type ModItemType = ESPresent ? Type.GetType("ExpandedShop.ModItem, ExpandedShop") : null;
+    private bool CheckForModItem(Transform item) => ESPresent && item.GetComponent(ModItemType) != null;
     private void TakeModItemOut(Transform item) // For Expanded Shop
     {
-        ModItem moditm = item.GetComponent<ModItem>();
-        moditm.InBag = false;
-        moditm.Condition = Fsm.Variables.FindFsmFloat("Condition").Value;
+        if (!ESPresent || ModItemType == null) return;
+        Component modItem = item.GetComponent(ModItemType);
+
+        ModItemType.GetField("InBag")?.SetValue(modItem, false);
+
+        float conditionValue = Fsm.Variables.FindFsmFloat("Condition").Value;
+        ModItemType.GetField("Condition")?.SetValue(modItem, conditionValue);    
     }
 
     private void TakeOutItem() // For USS items
@@ -45,7 +49,7 @@ internal class USSBagOpenAction : FsmStateAction
         if (BagInventory.BagContent.Count == 0)
         {
             if (CheckVanillaEmpty()) Fsm.Event("GARBAGE");
-            Object.Destroy(BagInventory);
+            UnityEngine.Object.Destroy(BagInventory);
         }            
         
         Fsm.Event("FINISHED");

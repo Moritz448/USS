@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
+using System.Reflection;
+using System;
 
 #if !MINI
 using MSCLoader;
 using System.Collections;
 
-using FridgeAPI;
 #endif
 
 namespace UniversalShoppingSystem;
@@ -27,14 +28,26 @@ public class USSItem : MonoBehaviour
 
     internal static Transform fridge;
 
-    private static readonly bool FAPIpresent = ModLoader.IsModPresent("FridgeAPI");
-
     private readonly float globalSpoilingRate = 0.06f;
     private readonly float spoilingRateFridge = 0.001f;
     private float FAPISpoilingRate;
     
     private Coroutine spoiling;
-    
+
+    private static readonly bool FAPIpresent = ModLoader.IsModPresent("FridgeAPI");
+
+    private readonly static Type fridgeType;
+    private readonly static PropertyInfo fridgeSpoilingRateProperty;
+
+    static USSItem()
+    {
+        if (FAPIpresent)
+        {
+            fridgeType = Type.GetType("FridgeAPI.Fridge, FridgeAPI");
+            if (fridgeType != null) fridgeSpoilingRateProperty = fridgeType.GetProperty("FridgeSpoilingRate");
+        }
+    }
+
     public void StartSpoiling() 
     { 
         if (spoiling == null && CanSpoil) spoiling = StartCoroutine(Spoil());
@@ -60,23 +73,24 @@ public class USSItem : MonoBehaviour
 
         Spoiled = true;
     }
-    
+
     private void OnTriggerEnter(Collider coll)
     {
         if (!FAPIpresent) return;
-        Fridge fridge = coll.GetComponent<Fridge>();
-        if (fridge != null)
+
+        Component fridgeComponent = coll.GetComponent(fridgeType);
+        if (fridgeComponent != null)
         {
             inFAPIFridge = true;
-            FAPISpoilingRate = fridge.FridgeSpoilingRate;
+            FAPISpoilingRate = (float)fridgeSpoilingRateProperty.GetValue(fridgeComponent, null);
         }
     }
 
     private void OnTriggerExit(Collider coll)
     {
         if (!FAPIpresent) return;
-        if (coll.GetComponent<Fridge>()) inFAPIFridge = false;
+        Component fridgeComponent = coll.GetComponent(fridgeType);
+        if (fridgeComponent != null) inFAPIFridge = false;
     }
 #endif
-
 }

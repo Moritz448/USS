@@ -45,14 +45,6 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\My Summer Car\mysummercar_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ExpandedShop">
-      <HintPath>..\..\..\Downloads\Expanded Shop-3981-1-2-1712855814\ExpandedShop.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="FridgeAPI">
-      <HintPath>..\..\..\Downloads\FridgeAPI-3887-1-0-0-1695399245\FridgeAPI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

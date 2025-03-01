@@ -3,8 +3,9 @@ using UnityEngine;
 using MSCLoader;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using System.Reflection;
 
-using ExpandedShop;
 
 namespace UniversalShoppingSystem;
 
@@ -13,30 +14,41 @@ internal class USSBagInventory : MonoBehaviour
     public List<GameObject> BagContent = [];
     
     private static readonly bool ESPresent = ModLoader.IsModPresent("ExpandedShop");
+    private static readonly Type ModShopBagInvType = ESPresent ? Type.GetType("ExpandedShop.ModShopBagInv, ExpandedShop") : null;
+    private static readonly Type ModItemType = ESPresent ? Type.GetType("ExpandedShop.ModItem, ExpandedShop") : null;
 
     private void Start() => StartCoroutine(InitiateBag());
 
-    private void TakeESOver() // Copys ExpandedShop items over to USS bag inventory
+    private void TakeESOver() // Copies ExpandedShop items over to USS bag inventory
     {
-        ModShopBagInv es = this.gameObject.GetComponent<ModShopBagInv>();
+        if (!ESPresent || ModShopBagInvType == null) return;
+        Component es = gameObject.GetComponent(ModShopBagInvType);
+        if (es == null) return;
 
-        if (es != null && es.shoplist.Count > 0)
+        FieldInfo shoplistField = ModShopBagInvType.GetField("shoplist");
+
+        if (shoplistField?.GetValue(es) is not List<GameObject> shoplist || shoplist.Count == 0) return;
+
+        BagContent.AddRange(shoplist);
+
+        for (int i = 0; i < BagContent.Count; i++)
         {
-            this.BagContent.AddRange(es.shoplist);
-
-            for (int i = 0; i < this.BagContent.Count; i++)
+            if (ModItemType != null)
             {
-                ModItem moditm = BagContent[i].GetComponent<ModItem>();
+                Component moditm = BagContent[i].GetComponent(ModItemType);
                 if (moditm != null)
                 {
-                    moditm.BagID = gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value;
-                    moditm.BagCountInt = i;
+                    ModItemType.GetField("BagID")?.SetValue(moditm, gameObject.GetPlayMaker("Use").FsmVariables.FindFsmString("ID").Value);
+                    ModItemType.GetField("BagCountInt")?.SetValue(moditm, i);
                 }
-
-                else if (!BagContent[i].GetComponent<USSItem>()) ModConsole.LogError($"[USS] Found no shop system item behaviour on item {i}!");
-                es.shoplist.Clear();
             }
+
+            else if (!BagContent[i].GetComponent<USSItem>())
+                ModConsole.LogError($"[USS] Found no shop system item behavior on item {i}!");
         }
+
+        // Clear shoplist after copying
+        shoplist.Clear();
     }
 
     private IEnumerator InitiateBag()

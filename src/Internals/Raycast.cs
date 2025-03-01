@@ -1,12 +1,9 @@
 ﻿#if !MINI
-
 using UnityEngine;
 using MSCLoader;
 using HutongGames.PlayMaker;
 using System.Collections;
 using System.Collections.Generic;
-
-using ExpandedShop;
 using System;
 
 namespace UniversalShoppingSystem;
@@ -26,7 +23,8 @@ public class ItemShopRaycast : MonoBehaviour
     {
         GameObject es;
         while ((es = GameObject.Find("STORE/TeimoDrinksMod(Clone)")) == null) yield return new WaitForSeconds(1f);
-        es.GetComponent<ShopRaycast>().ApplyFsmBool = false;
+        Type RaycastType = Type.GetType("ExpandedShop.ShopRaycast, ExpandedShop");
+        es.GetComponent(RaycastType)?.GetType()?.GetField("ApplyFsmBool")?.SetValue(RaycastType, null);
         yield break;
     }
 
@@ -42,7 +40,10 @@ public class ItemShopRaycast : MonoBehaviour
     {
         if (ModLoader.IsModPresent("ExpandedShop")) // Loading up the ES compatibility stuff, including version check
         {
-            if (new Version(new ExpandedShop.ExpandedShop().Version) < new Version("1.1"))
+            Type expandedShopType = Type.GetType("ExpandedShop.ExpandedShop, ExpandedShop");
+            string versionString = expandedShopType.GetProperty("Version").GetValue(Activator.CreateInstance(expandedShopType), null) as string;
+
+            if (new Version(versionString) < new Version("1.1"))
             {
                 ModUI.ShowCustomMessage("You are using an old version of ExpandedShop which is not compatible with UniversalShoppingSystem. Please update or uninstall ExpandedShop.", "Wrong Version", new MsgBoxBtn[]
                 {
