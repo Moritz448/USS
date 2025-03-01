@@ -25,7 +25,7 @@ public class USSItem : MonoBehaviour
 
     private bool inFAPIFridge, inVanillaFridge = false;
 
-    private static readonly Transform fridge;
+    internal static Transform fridge;
 
     private static readonly bool FAPIpresent = ModLoader.IsModPresent("FridgeAPI");
 
@@ -35,11 +35,6 @@ public class USSItem : MonoBehaviour
     
     private Coroutine spoiling;
     
-    static USSItem()
-    {  
-        fridge = GameObject.Find("YARD")?.transform.Find("Building/KITCHEN/Fridge/FridgePoint/ChillArea");
-    }
-
     public void StartSpoiling() 
     { 
         if (spoiling == null && CanSpoil) spoiling = StartCoroutine(Spoil());

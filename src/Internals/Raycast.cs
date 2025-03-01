@@ -32,9 +32,10 @@ public class ItemShopRaycast : MonoBehaviour
 
     private void Awake()
     {
-        _guiBuy ??= PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy");
-        _guiText ??= PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
-        storeOpen ??= GameObject.Find("STORE").GetPlayMaker("OpeningHours").FsmVariables.FindFsmBool("OpenStore");
+        _guiBuy = PlayMakerGlobals.Instance.Variables.FindFsmBool("GUIbuy");
+        _guiText = PlayMakerGlobals.Instance.Variables.FindFsmString("GUIinteraction");
+        storeOpen = GameObject.Find("STORE").GetPlayMaker("OpeningHours").FsmVariables.FindFsmBool("OpenStore");
+        USSItem.fridge =  GameObject.Find("YARD")?.transform.Find("Building/KITCHEN/Fridge/FridgePoint/ChillArea");
     }
 
     private void Start()

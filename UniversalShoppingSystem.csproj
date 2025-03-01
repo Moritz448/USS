@@ -80,7 +80,6 @@
     <Compile Include="src\Internals\SaveLoad.cs" />
     <Compile Include="src\ShoppingBags\BagActions.cs" />
     <Compile Include="src\ShoppingBags\BagOpenAction.cs" />
-    <Compile Include="src\Internals\GameHook.cs" />
     <Compile Include="src\USS_Components\ItemShop.cs" />
     <Compile Include="src\Internals\Raycast.cs" />
     <Compile Include="src\ShoppingBags\ShoppingBag.cs" />
