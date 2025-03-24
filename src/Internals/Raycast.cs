@@ -19,9 +19,6 @@ public class ItemShopRaycast : MonoBehaviour
 
     private RaycastHit hit;
 
-    // DEBUG
-    private RaycastHit[] hits;
-
     private IEnumerator ToggleESBool() // Due to load order depending on the dll names (alphabetical order), the script needs to wait until ExpandedShop instantiated its components
     {
         GameObject es;
