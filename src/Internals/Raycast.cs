@@ -72,6 +72,8 @@ public class ItemShopRaycast : MonoBehaviour
             if (hitName == "store_equipment")
             {
                 RaycastHit[] hits = UnifiedRaycast.GetRaycastHits();
+                Array.Sort(hits, (x, y) => x.distance.CompareTo(y.distance));
+
                 if (hits.Length < 2)
                 {
                     if (cartIconShowing)
