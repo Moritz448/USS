@@ -66,9 +66,17 @@ public class ItemShopRaycast : MonoBehaviour
         bool lmb = Input.GetMouseButtonDown(0);
         bool rmb = Input.GetMouseButtonDown(1);
 
-        if (!string.IsNullOrEmpty(UnifiedRaycast.GetHitName()))
+        var hitName = UnifiedRaycast.GetHitName();
+        if (!string.IsNullOrEmpty(hitName))
         {
-            hit = UnifiedRaycast.GetRaycastHit();
+            if (hitName == "store_equipment")
+            {
+                RaycastHit[] hits = UnifiedRaycast.GetRaycastHits();
+                if (hits.Length < 2) return;
+                hit = hits[1];
+            }
+            else
+                hit = UnifiedRaycast.GetRaycastHit();
 
             if (ItemShop.ShopLookup.TryGetValue(hit.collider, out ItemShop shop))
             {
