@@ -19,6 +19,9 @@ public class ItemShopRaycast : MonoBehaviour
 
     private RaycastHit hit;
 
+    // DEBUG
+    private RaycastHit[] hits;
+
     private IEnumerator ToggleESBool() // Due to load order depending on the dll names (alphabetical order), the script needs to wait until ExpandedShop instantiated its components
     {
         GameObject es;
@@ -72,7 +75,15 @@ public class ItemShopRaycast : MonoBehaviour
             if (hitName == "store_equipment")
             {
                 RaycastHit[] hits = UnifiedRaycast.GetRaycastHits();
-                if (hits.Length < 2) return;
+                if (hits.Length < 2)
+                {
+                    if (cartIconShowing)
+                    {
+                        cartIconShowing = _guiBuy.Value = false;
+                        _guiText.Value = String.Empty;
+                    }
+                    return;
+                }
                 hit = hits[1];
             }
             else
@@ -84,9 +95,11 @@ public class ItemShopRaycast : MonoBehaviour
                 _guiText.Value = $"{shop.ItemName} {shop.ItemPrice} mk";
                 if (lmb && shop.Stock > 0) shop.Buy();
                 else if (rmb && shop.Cart > 0) shop.Unbuy();
+                return;
             }
         }
-        else if (cartIconShowing)
+
+        if (cartIconShowing)
         {
             cartIconShowing = _guiBuy.Value = false;
             _guiText.Value = String.Empty;
