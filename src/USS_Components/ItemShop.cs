@@ -359,7 +359,7 @@ public class ItemShop : MonoBehaviour
         this.transform.GetChild(Cart - 1 + itemsBought).gameObject.SetActive(false);
 
         register.FsmVariables.GetFsmFloat("PriceTotal").Value += ItemPrice;
-        register.FsmVariables.GetFsmInt("BagStuff").Value += 1;
+        if (SpawnInBag) register.FsmVariables.GetFsmInt("BagStuff").Value += 1;
         register.SendEvent("PURCHASE");
     }
 
@@ -374,7 +374,7 @@ public class ItemShop : MonoBehaviour
         Cart--;
 
         register.FsmVariables.GetFsmFloat("PriceTotal").Value -= ItemPrice;
-        register.FsmVariables.GetFsmInt("BagStuff").Value -= 1;
+        if (SpawnInBag) register.FsmVariables.GetFsmInt("BagStuff").Value -= 1;
         register.SendEvent("PURCHASE");
     }
 
