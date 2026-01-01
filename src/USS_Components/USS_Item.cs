@@ -26,12 +26,12 @@ public class USSItem : MonoBehaviour
 
     private bool inFAPIFridge, inVanillaFridge = false;
 
-    internal static Transform fridge;
+    internal static Transform[] fridges;
 
     private readonly float globalSpoilingRate = 0.06f;
     private readonly float spoilingRateFridge = 0.001f;
     private float FAPISpoilingRate;
-    
+
     private Coroutine spoiling;
 
     private static readonly bool FAPIpresent = ModLoader.IsModPresent("FridgeAPI");
@@ -48,15 +48,25 @@ public class USSItem : MonoBehaviour
         }
     }
 
-    public void StartSpoiling() 
-    { 
+    public void StartSpoiling()
+    {
         if (spoiling == null && CanSpoil) spoiling = StartCoroutine(Spoil());
     }
 
     private void Update()
     {
-        inVanillaFridge = (transform.position - fridge.position).sqrMagnitude < 0.2025f;
-        Cooled = inVanillaFridge || inFAPIFridge; 
+        inVanillaFridge = false;
+
+        foreach (Transform fridge in fridges)
+        {
+            if ((transform.position - fridge.position).sqrMagnitude < 0.2025f)
+            {
+                inVanillaFridge = true;
+                break;
+            }
+        }
+
+        Cooled = inVanillaFridge || inFAPIFridge;
     }
 
     public IEnumerator Spoil()

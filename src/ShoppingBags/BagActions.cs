@@ -49,14 +49,14 @@ internal class USSBagSetupOpenAction : MonoBehaviour
 
         use.GetState("Spawn one").InsertAction(0, new USSBagOpenAction
         {
-            Arrays = Bag.GetComponents<PlayMakerArrayListProxy>(),
+            Array = Bag.GetArrayListProxy("Values"),
             OpenAll = false,
             BagInventory = BagInventory
         });
 
         use.GetState("Spawn all").InsertAction(0, new USSBagOpenAction
         {
-            Arrays = Bag.GetComponents<PlayMakerArrayListProxy>(),
+            Array = Bag.GetArrayListProxy("Values"),
             OpenAll = true,
             BagInventory = BagInventory
         });

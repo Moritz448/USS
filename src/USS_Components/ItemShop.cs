@@ -37,9 +37,8 @@ public class ItemShop : MonoBehaviour
     public int Stock, Cart;
     private int itemsBought;    
 
-    private Vector3 bigItemSpawnPosition = new Vector3(-1551.303f, 4.88f, 1181.904f);
-
-    private PlayMakerFSM register, registerData;           // Required to hook paying mechanics & bag creation mechanics
+    private Vector3 bigItemSpawnPosition = new Vector3(-1736.165f, 4.400003f, 919.3211f);
+    private PlayMakerFSM register;           // Required to hook paying mechanics & bag creation mechanics
     private GameObject vanillaShopInventory; // Required to hook restock mechanics
 
     internal static Dictionary<Collider, ItemShop> ShopLookup = [];
@@ -262,18 +261,6 @@ public class ItemShop : MonoBehaviour
         else bagInventory.BagContent.Add(obj);
     }
 
-    private class CreateBagAction : FsmStateAction
-    {
-        public ItemShop Shop;
-        public FsmInt Check;
-
-        public override void OnEnter()
-        {
-            if (Shop.Cart > 0 && Check.Value == 0) Fsm.Event("FINISHED");
-            Finish();
-        }
-    }
-
     private class RestockAction : FsmStateAction
     {
         public ItemShop shop;
@@ -294,17 +281,16 @@ public class ItemShop : MonoBehaviour
         ItemShopRaycast itemShopRaycast = player.GetComponent<ItemShopRaycast>() ?? player.AddComponent<ItemShopRaycast>();
         itemShopRaycast.Shops.Add(this); // Register shop for commands, unique id check etc.
 
-        GameObject store = GameObject.Find("STORE");
+        GameObject store = GameObject.Find("PERAPORTTI").transform.Find("Building").gameObject;
 
-        register = store.transform.Find("StoreCashRegister/Register").GetComponent<PlayMakerFSM>();
-        registerData = GameObject.Find("StoreCashRegister").transform.GetChild(2).GetPlayMaker("Data");
-        registerData.InitializeFSM();
-        vanillaShopInventory = store.transform.Find("Inventory").gameObject;
+        register = store.transform.Find("Store/Cashier/StoreCashRegister/CashRegisterLogic").GetComponent<PlayMakerFSM>();
+        register.InitializeFSM();
+        vanillaShopInventory = store.transform.Find("Store/INVENTORY_store").gameObject;
 
         register.FsmInject("Purchase", Pay);
         vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this }); // Inject paying and restock mechanics
 
-        transform.SetParent(store.transform.Find("LOD").transform.Find("GFX_Store").transform.Find("store_inside"), false);
+        transform.SetParent(store.transform.Find("LOD").transform.Find("Store").transform.Find("GFX/PRODUCTS"), false);
         transform.localEulerAngles = TriggerRotation;
         transform.localPosition = TriggerPosition;
 
@@ -320,18 +306,12 @@ public class ItemShop : MonoBehaviour
     private void SetupBagSpawning(GameObject store)
     {
         // Bag Spawning Setup
-        PlayMakerFSM bagCreator = store.transform.Find("LOD/ShopFunctions/BagCreator").GetPlayMaker("Create");
+        PlayMakerFSM bagCreator = store.transform.Find("Store/Cashier/StoreCashRegister/BagCreator").GetPlayMaker("Create");
         bagCreator.InitializeFSM();
-        bagCreator.GetState("Copy contents").InsertAction(0, new USSBagSetupAction
+        bagCreator.GetState("Copy contents 2").InsertAction(0, new USSBagSetupAction
         {
-            Bag = (bagCreator.GetState("Copy contents").Actions.First(action => action is ArrayListCopyTo) as ArrayListCopyTo).gameObjectTarget.GameObject,
+            Bag = (bagCreator.GetState("Copy contents 2").Actions.First(action => action is HashTableKeys) as HashTableKeys).arrayListGameObject.GameObject,
             Shop = this
-        });
-        // Abusing the oil filter shop for our purposes
-        registerData.GetState("Oil filter").InsertAction(0, new CreateBagAction
-        {
-            Shop = this,
-            Check = registerData.FsmVariables.FindFsmInt("QOilfilter")
         });
     }
 
@@ -379,6 +359,7 @@ public class ItemShop : MonoBehaviour
         this.transform.GetChild(Cart - 1 + itemsBought).gameObject.SetActive(false);
 
         register.FsmVariables.GetFsmFloat("PriceTotal").Value += ItemPrice;
+        register.FsmVariables.GetFsmInt("BagStuff").Value += 1;
         register.SendEvent("PURCHASE");
     }
 
@@ -393,6 +374,7 @@ public class ItemShop : MonoBehaviour
         Cart--;
 
         register.FsmVariables.GetFsmFloat("PriceTotal").Value -= ItemPrice;
+        register.FsmVariables.GetFsmInt("BagStuff").Value -= 1;
         register.SendEvent("PURCHASE");
     }
 
