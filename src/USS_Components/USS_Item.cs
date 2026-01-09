@@ -55,6 +55,12 @@ public class USSItem : MonoBehaviour
 
     private void Update()
     {
+        if (inFAPIFridge)
+        {
+            Cooled = true;
+            return;
+        }
+
         inVanillaFridge = false;
 
         foreach (Transform fridge in fridges)
@@ -66,7 +72,7 @@ public class USSItem : MonoBehaviour
             }
         }
 
-        Cooled = inVanillaFridge || inFAPIFridge;
+        Cooled = inVanillaFridge;
     }
 
     public IEnumerator Spoil()
