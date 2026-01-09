@@ -35,7 +35,7 @@ public class ItemShopRaycast : MonoBehaviour
         
         if (ModLoader.CurrentGame == Game.MySummerCar) storeOpen = GameObject.Find("STORE").GetPlayMaker("OpeningHours").FsmVariables.FindFsmBool("OpenStore");
         USSItem.fridges = [
-            GameObject.Find("YARD")?.transform.Find("Building/KITCHEN/Fridge/FridgePoint/ChillArea1"),
+            GameObject.Find("YARD")?.transform.Find("Building/KITCHEN/Fridge/FridgePoint").Find(ModLoader.CurrentGame == Game.MySummerCar ? "ChillArea" : "ChillArea1"),
             ModLoader.CurrentGame == Game.MyWinterCar ? GameObject.Find("HOMENEW")?.transform.Find("Functions/Fridge/FridgePoint/ChillArea2") : null,
             ModLoader.CurrentGame == Game.MyWinterCar ? GameObject.Find("JOBS")?.transform.Find("FACTORY/Mesh/Kitchen/Fridge/FridgePoint/ChillArea3"): null
         ];
