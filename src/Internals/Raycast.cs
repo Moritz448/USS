@@ -69,9 +69,27 @@ public class ItemShopRaycast : MonoBehaviour
         bool lmb = Input.GetMouseButtonDown(0);
         bool rmb = Input.GetMouseButtonDown(1);
 
-        if (!string.IsNullOrEmpty(UnifiedRaycast.GetHitName()))
+        var hitName = UnifiedRaycast.GetHitName();
+        if (!string.IsNullOrEmpty(hitName))
         {
-            hit = UnifiedRaycast.GetRaycastHit();
+            if (hitName == "store_equipment")
+            {
+                RaycastHit[] hits = UnifiedRaycast.GetRaycastHits();
+                Array.Sort(hits, (x, y) => x.distance.CompareTo(y.distance));
+
+                if (hits.Length < 2)
+                {
+                    if (cartIconShowing)
+                    {
+                        cartIconShowing = _guiBuy.Value = false;
+                        _guiText.Value = String.Empty;
+                    }
+                    return;
+                }
+                hit = hits[1];
+            }
+            else
+                hit = UnifiedRaycast.GetRaycastHit();
 
             if (ItemShop.ShopLookup.TryGetValue(hit.collider, out ItemShop shop))
             {
@@ -79,9 +97,11 @@ public class ItemShopRaycast : MonoBehaviour
                 _guiText.Value = $"{shop.ItemName} {shop.ItemPrice} mk";
                 if (lmb && shop.Stock > 0) shop.Buy();
                 else if (rmb && shop.Cart > 0) shop.Unbuy();
+                return;
             }
         }
-        else if (cartIconShowing)
+
+        if (cartIconShowing)
         {
             cartIconShowing = _guiBuy.Value = false;
             _guiText.Value = String.Empty;
