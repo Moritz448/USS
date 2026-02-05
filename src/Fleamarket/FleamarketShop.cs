@@ -1,8 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using HutongGames.PlayMaker.Actions;
-
-
 #if !MINI
 using System;
 using System.Collections.Generic;
@@ -37,9 +34,7 @@ public class FleamarketShop : ShopBase
     public float ScarcityFactor = 1.5f;
     [UnityEngine.Tooltip("Random price variation by ±x, set to 0 to disable randomness.")]
     public float PriceRandomnessRange = 0;
-    [Header("Allow reselling")]
-    public bool AllowResale = true;
-    [Header("Maximum price player can set with the item still selling")]
+    [Header("Maximum price the item will resell for")]
     public float MaxResalePrice;
 
 #if !MINI
@@ -146,33 +141,21 @@ public class FleamarketShop : ShopBase
         PriceRandomnessRange = Mathf.Abs(PriceRandomnessRange);
         ScarcityFactor = Mathf.Max(1, ScarcityFactor);
 
-        Transform fleamarket;
-
-        fleamarket = GameObject.Find("FleaMarket").transform;
+        Transform fleamarket = GameObject.Find("FleaMarket").transform;
 
         register = fleamarket.transform.Find("LOD/FleaCashRegister/CashRegisterLogic").GetPlayMaker("Data");
         register.InitializeFSM();
         registerTotal = register.FsmVariables.GetFsmFloat("Total");
         register.FsmInject("Purchase", Pay);
 
-        Transform saleTable = fleamarket.Find("SaleTable");
-        PlayMakerHashTableProxy priceGuide = saleTable.GetComponents<PlayMakerHashTableProxy>().First(x => x.referenceName == "PriceGuide");
-        if (!priceGuide.hashTable.ContainsKey(ItemPrefab.name.ToLower()))
+        if (!ItemPrefab.GetComponent<FleamarketSellable>())
         {
-            priceGuide.hashTable.Add(ItemPrefab.name.ToLower(), MaxResalePrice > 0 ? MaxResalePrice : BasePrice);
-            priceGuide.TakeSnapShot();
-        }
-        
-
-        PlayMakerFSM fleamarketLogic = saleTable.GetPlayMaker("Logic");
-        fleamarketLogic.FsmInject("Remove object", delegate
-        {
-            GameObject objToDestroy = fleamarketLogic.GetState("Remove object").GetAction<SendEventByName>(1).eventTarget.gameObject.GameObject.Value;
-            if (objToDestroy != null) GameObject.Destroy(objToDestroy);
-        }, index: 4);
+            FleamarketSellable sellable = ItemPrefab.AddComponent<FleamarketSellable>();
+            sellable.MaxSalePrice = MaxResalePrice;
+        } 
 
         Stock = Cart = itemsBought = 0;
-        Restock(); // Fully restock, save data overrides the values
+        Restock(); // restock, save data overrides the values
 
         ItemSpawnPosition = fleamarket.Find("fleamarket_table/SpawnItemFleamarket");
 
@@ -217,10 +200,15 @@ public class FleamarketShop : ShopBase
                     child.gameObject.SetActive(true);
                     Stock++;
                     activeItems.Add(child);
-                    continue;
                 }
-                break;
+                else
+                {
+                    child.gameObject.SetActive(false);
+                    inactiveItems.Add(child);
+                }
+                continue;
             }
+
             if (UnityEngine.Random.Range(0f, 1f) <= (ChainedChance ? Mathf.Pow(AvailabilityChance, Stock + 1) : AvailabilityChance)) // subsequent items get increasingly rare
             {
                 child.gameObject.SetActive(true);

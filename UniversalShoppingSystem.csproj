@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="src\DebugCommands.cs" />
     <Compile Include="src\Fleamarket\FleamarketRestock.cs" />
+    <Compile Include="src\Fleamarket\FleamarketSellable.cs" />
     <Compile Include="src\Internals\ShopBase.cs" />
     <Compile Include="src\Fleamarket\FleamarketShop.cs" />
     <Compile Include="src\Internals\SaveLoad.cs" />
