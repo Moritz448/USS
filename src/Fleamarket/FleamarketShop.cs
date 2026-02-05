@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Security.Cryptography;
+using HutongGames.PlayMaker.Actions;
 
 
 #if !MINI
@@ -37,6 +37,10 @@ public class FleamarketShop : ShopBase
     public float ScarcityFactor = 1.5f;
     [UnityEngine.Tooltip("Random price variation by ±x, set to 0 to disable randomness.")]
     public float PriceRandomnessRange = 0;
+    [Header("Allow reselling")]
+    public bool AllowResale = true;
+    [Header("Maximum price player can set with the item still selling")]
+    public float MaxResalePrice;
 
 #if !MINI
     // FOLLOWING NOT NEEDED FOR UNITY SETUP; THEREFORE NOT INCLUDED IN MINI DLL
@@ -142,25 +146,41 @@ public class FleamarketShop : ShopBase
         PriceRandomnessRange = Mathf.Abs(PriceRandomnessRange);
         ScarcityFactor = Mathf.Max(1, ScarcityFactor);
 
-        Transform store;
+        Transform fleamarket;
 
-        store = GameObject.Find("FleaMarket").transform;
+        fleamarket = GameObject.Find("FleaMarket").transform;
 
-        register = store.transform.Find("LOD/FleaCashRegister/CashRegisterLogic").GetPlayMaker("Data");
+        register = fleamarket.transform.Find("LOD/FleaCashRegister/CashRegisterLogic").GetPlayMaker("Data");
         register.InitializeFSM();
         registerTotal = register.FsmVariables.GetFsmFloat("Total");
         register.FsmInject("Purchase", Pay);
 
+        Transform saleTable = fleamarket.Find("SaleTable");
+        PlayMakerHashTableProxy priceGuide = saleTable.GetComponents<PlayMakerHashTableProxy>().First(x => x.referenceName == "PriceGuide");
+        if (!priceGuide.hashTable.ContainsKey(ItemPrefab.name.ToLower()))
+        {
+            priceGuide.hashTable.Add(ItemPrefab.name.ToLower(), MaxResalePrice > 0 ? MaxResalePrice : BasePrice);
+            priceGuide.TakeSnapShot();
+        }
+        
+
+        PlayMakerFSM fleamarketLogic = saleTable.GetPlayMaker("Logic");
+        fleamarketLogic.FsmInject("Remove object", delegate
+        {
+            GameObject objToDestroy = fleamarketLogic.GetState("Remove object").GetAction<SendEventByName>(1).eventTarget.gameObject.GameObject.Value;
+            if (objToDestroy != null) GameObject.Destroy(objToDestroy);
+        }, index: 4);
+
         Stock = Cart = itemsBought = 0;
         Restock(); // Fully restock, save data overrides the values
 
-        ItemSpawnPosition = store.Find("store_table/SpawnItemFleamarket");
+        ItemSpawnPosition = fleamarket.Find("fleamarket_table/SpawnItemFleamarket");
 
         if (ItemSpawnPosition == null)
         {
             ItemSpawnPosition = new GameObject().transform;
             ItemSpawnPosition.name = "SpawnItemFleamarket";
-            ItemSpawnPosition.SetParent(store.Find("store_table"));
+            ItemSpawnPosition.SetParent(fleamarket.Find("store_table"));
             ItemSpawnPosition.transform.localPosition = new(0.1f, -0.15f, 0.8f);
             ItemSpawnPosition.transform.localEulerAngles = new(0, 270, 270);
         }
