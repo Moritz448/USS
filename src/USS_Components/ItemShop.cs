@@ -12,39 +12,24 @@ using System.Linq;
 
 namespace UniversalShoppingSystem;
 
-public class ItemShop : MonoBehaviour
+public class ItemShop : ShopBase
 {
-    public delegate void ShopEvent();
-
-    // Settings to change in Unity
-    [Header("Shop Settings")]
-    public string ShopID = "Unique ID for Save/Load management";
-    public string ItemName = "Shop Item Name";
     public float ItemPrice;
-
+    public bool SpawnInBag;
     [Header("Relative to store_inside")]
     public Vector3 TriggerPosition, TriggerRotation;
 
-    public GameObject ItemPrefab;
-    public bool SpawnInBag;
-
 #if !MINI
-    // FOLLOWING NOT NEEDED FOR UNITY SETUP; THEREFORE NOT INCLUDED IN MINI DLL
-    public List<GameObject> BoughtItems = [];
-
-    public event ShopEvent OnBuy, OnRestock;
-
-    public int Stock, Cart;
-    private int itemsBought;    
-
-    private Transform bigItemSpawnPosition;
     private PlayMakerFSM register, registerData;           // Required to hook paying mechanics & bag creation mechanics
     private GameObject vanillaShopInventory; // Required to hook restock mechanics
 
-    internal static Dictionary<Collider, ItemShop> ShopLookup = [];
-
     private const string ShopSaveKey = "USS_{0}";
     private const string ItemSaveKey = "USS_{0}_items";
+
+    /// <summary>
+    /// Get ItemPrice
+    /// </summary>
+    public override float GetItemPrice() => ItemPrice;
 
     /// <summary>
     /// Save the shop and all bought items
@@ -83,10 +68,10 @@ public class ItemShop : MonoBehaviour
                     condition.Add(itm.Condition);
                 }
                 else ModConsole.LogWarning($"[USS] Object {obj.name} is missing USSItem component.");
-                
+
             }
 
-            ItemSave saveData = new(pos, rot, inBag, bagID, condition);
+            USSItemSave saveData = new(pos, rot, inBag, bagID, condition);
             SaveLoad.SerializeClass(mod, saveData, String.Format(ItemSaveKey, ShopID));
         }
         catch (Exception ex) { ModConsole.LogError($"[USS] Failed to save {ShopID} items: {ex.Message}\n{ex.StackTrace}"); }
@@ -114,10 +99,10 @@ public class ItemShop : MonoBehaviour
             // ITEMS LOADING
             if (SaveLoad.ValueExists(mod, String.Format(ItemSaveKey, ShopID)))
             {
-                ItemSave itemData = SaveLoad.DeserializeClass<ItemSave>(mod, String.Format(ItemSaveKey, ShopID));
+                USSItemSave itemData = SaveLoad.DeserializeClass<USSItemSave>(mod, String.Format(ItemSaveKey, ShopID));
                 List<GameObject> shoppingBags = [.. (from gameObject in UnityEngine.Resources.FindObjectsOfTypeAll<GameObject>()
-                                                 where gameObject.name.Contains("shopping bag") && gameObject.GetComponent<PlayMakerFSM>() != null
-                                                 select gameObject)];
+                                                     where gameObject.name.Contains("shopping bag") && gameObject.GetComponent<PlayMakerFSM>() != null
+                                                     select gameObject)];
 
                 int itemCount = itemData.Position.Count;
                 if (itemData.Rotation.Count != itemCount || itemData.InBag.Count != itemCount || itemData.BagID.Count != itemCount || itemData.Condition.Count != itemCount)
@@ -213,15 +198,9 @@ public class ItemShop : MonoBehaviour
         }
     }
 
-    private void Start()
+    protected override void Start()
     {
-        if (ShopID == "Unique ID for Save/Load management") ModConsole.Error($"[USS]: ShopID of {ItemName} is still default!");
-
-        if (!ShopLookup.ContainsKey(GetComponent<Collider>())) ShopLookup[GetComponent<Collider>()] = this;
-
-        GameObject player = GameObject.Find("PLAYER");
-        ItemShopRaycast itemShopRaycast = player.GetComponent<ItemShopRaycast>() ?? player.AddComponent<ItemShopRaycast>();
-        itemShopRaycast.Shops.Add(this); // Register shop for commands, unique id check etc.
+        base.Start();
 
         Transform store;
 
@@ -250,7 +229,6 @@ public class ItemShop : MonoBehaviour
             transform.SetParent(store.transform.Find("LOD").transform.Find("Store").transform.Find("GFX/PRODUCTS"), false);
         }
 
-
         register.FsmInject("Purchase", Pay);
         vanillaShopInventory.GetPlayMaker("Logic").GetState("Items").InsertAction(0, new RestockAction { shop = this }); // Inject paying and restock mechanics
 
@@ -264,7 +242,6 @@ public class ItemShop : MonoBehaviour
         if (SpawnInBag) SetupBagSpawning(store); // Only setup the whole stuff when items should spawn in bags     
     }
 
-    private void OnDestroy() => ShopLookup.Remove(GetComponent<Collider>());
 
     private void SetupBagSpawning(Transform store)
     {
@@ -302,7 +279,7 @@ public class ItemShop : MonoBehaviour
     {
         for (int i = 0; i < transform.childCount; i++) transform.GetChild(i).gameObject.SetActive(true); itemsBought = 0;
         Stock = transform.childCount;
-        OnRestock?.Invoke(); // Run user-provided actions
+        InvokeOnRestock(); // Run user-provided actions
     }
 
     internal void SpawnBag(USSBagInventory BagInventory)
@@ -334,7 +311,7 @@ public class ItemShop : MonoBehaviour
     /// <summary>
     /// Add one item to the cart
     /// </summary>
-    internal void Buy() // Put item in Cart
+    internal override void Buy() // Put item in Cart
     {
         Stock--;
         Cart++;
@@ -346,11 +323,10 @@ public class ItemShop : MonoBehaviour
         register.SendEvent("PURCHASE");
     }
 
-
     /// <summary>
     /// Remove one item from the cart
     /// </summary>
-    internal void Unbuy() // Take item back out of Cart
+    internal override void Unbuy() // Take item back out of Cart
     {
         this.transform.GetChild(Cart - 1 + itemsBought).gameObject.SetActive(true);
         Stock++;
@@ -363,8 +339,8 @@ public class ItemShop : MonoBehaviour
 
     private void Pay() // Called on checkout at register
     {
-        if (this.Cart > 0) OnBuy?.Invoke();
-        
+        if (this.Cart > 0) InvokeOnBuy();
+
         if (!this.SpawnInBag) // When its a big item run this, if it spawns in bag SpawnBag gets called
         {
             for (int i = 0; i < Cart; i++)

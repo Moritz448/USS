@@ -60,6 +60,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\DebugCommands.cs" />
+    <Compile Include="src\Fleamarket\FleamarketRestock.cs" />
+    <Compile Include="src\Internals\ShopBase.cs" />
+    <Compile Include="src\Fleamarket\FleamarketShop.cs" />
     <Compile Include="src\Internals\SaveLoad.cs" />
     <Compile Include="src\ShoppingBags\BagActions.cs" />
     <Compile Include="src\ShoppingBags\BagOpenAction.cs" />
@@ -80,7 +84,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if "$(ConfigurationName)" == "Debug" (
+    <PostBuildEvent>if "$(ConfigurationName)" == "Mini" (
+copy "$(TargetPath)" "C:\Users\Moritz\Documents\MWC Modding\CannedBeer\Assets\Assets" /y
+exit
+)
+
+if "$(ConfigurationName)" == "Debug" (
 copy "$(TargetPath)" "C:\Users\Moritz\Documents\MySummerCar\Mods\References" /y
 copy "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\My Winter Car\Mods\References\" /y
 copy "$(TargetDir)$(TargetName).pdb" "C:\Users\Moritz\Documents\MySummerCar\Mods\References" /y
