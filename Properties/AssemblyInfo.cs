@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Honeycomb936")]
 [assembly: AssemblyProduct("UniversalShoppingSystem")]
-[assembly: AssemblyCopyright("Copyright © 2024 by Honeycomb936")]
+[assembly: AssemblyCopyright("Copyright © 2026 by Honeycomb936")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,4 +32,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.1")]
-[assembly: AssemblyFileVersion("1.7.991")]
+[assembly: AssemblyFileVersion("1.8.0")]
