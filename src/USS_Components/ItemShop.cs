@@ -219,14 +219,14 @@ public class ItemShop : ShopBase
         }
         else
         {
-            store = GameObject.Find("PERAPORTTI").transform.Find("Building");
+            store = GameObject.Find("PERAPORTTI").transform.Find("ActiveFunctions");
             bigItemSpawnPosition = store.transform.Find("Store/Cashier/SpawnItemStore");
 
             register = store.transform.Find("Store/Cashier/StoreCashRegister/CashRegisterLogic").GetComponent<PlayMakerFSM>();
             register.InitializeFSM();
             if (!vanillaShopInventory) vanillaShopInventory = store.transform.Find("Store/INVENTORY_store").gameObject;
 
-            transform.SetParent(store.transform.Find("LOD").transform.Find("Store").transform.Find("GFX/PRODUCTS"), false);
+            transform.SetParent(GameObject.Find("PERAPORTTI/Building").transform.Find("LOD100").transform.Find("Store").transform.Find("GFX/PRODUCTS"), false);
         }
 
         register.FsmInject("Purchase", Pay);
