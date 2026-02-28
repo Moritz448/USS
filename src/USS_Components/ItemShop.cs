@@ -226,7 +226,7 @@ public class ItemShop : ShopBase
             register.InitializeFSM();
             if (!vanillaShopInventory) vanillaShopInventory = store.transform.Find("Store/INVENTORY_store").gameObject;
 
-            transform.SetParent(GameObject.Find("PERAPORTTI/Building").transform.Find("LOD100").transform.Find("Store").transform.Find("GFX/PRODUCTS"), false);
+            transform.SetParent(GameObject.Find("PERAPORTTI/Building").transform.Find("LOD100/Store/GFX/PRODUCTS"), false);
         }
 
         register.FsmInject("Purchase", Pay);
