@@ -168,7 +168,7 @@ public class FleamarketShop : ShopBase
             ItemSpawnPosition.transform.localEulerAngles = new(0, 270, 270);
         }
 
-        GameObject.Find("MAP").transform.Find("PivotSun/Pivot/SUN").GetPlayMaker("Color").FsmInject("Next day", delegate
+        GameObject.Find("MAP").transform.Find("Sun/PivotSun/SUN").GetPlayMaker("Color").FsmInject("Next day", delegate
         {
             if (PlayMakerGlobals.Instance.Variables.GetFsmInt("GlobalDay").Value == 5) Restock();
         }, index: 0);
